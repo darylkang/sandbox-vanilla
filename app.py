@@ -51,9 +51,20 @@ def get_client() -> OpenAI:
     Raises:
         SystemExit: If no API key is found, stops the app with an error message
     """
-    # Try to get API key from Streamlit secrets first, then environment variables
-    # This order allows for easy deployment while supporting local development
-    api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+    api_key = None
+    
+    # Try to get API key from Streamlit secrets first (with error handling)
+    try:
+        # Check if secrets are available and contain the API key
+        if hasattr(st, 'secrets') and st.secrets:
+            api_key = st.secrets.get("OPENAI_API_KEY")
+    except Exception:
+        # If secrets system fails, continue to environment variables
+        pass
+    
+    # If no key from secrets, try environment variables
+    if not api_key:
+        api_key = os.getenv("OPENAI_API_KEY")
     
     if not api_key:
         st.error("""
@@ -73,6 +84,10 @@ def get_client() -> OpenAI:
         ```
         
         Get your API key from: https://platform.openai.com/api-keys
+        
+        **Current Status:**
+        - Environment variable: {'✅ Set' if os.getenv('OPENAI_API_KEY') else '❌ Not found'}
+        - Streamlit secrets: {'✅ Available' if hasattr(st, 'secrets') and st.secrets else '❌ Not available'}
         """)
         st.stop()
     
@@ -103,17 +118,19 @@ if prompt := st.chat_input("Ask the bot anything..."):
     # Make API call to OpenAI's Chat Completions endpoint
     # This is the core of LLM integration - sending messages and getting responses
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Using GPT-4o-mini for cost efficiency
-            messages=[
-                {"role": m["role"], "content": m["content"]} 
-                for m in st.session_state.messages
-            ],
-            # Optional parameters you can experiment with:
-            # temperature=0.7,  # Controls randomness (0.0 = deterministic, 1.0 = very random)
-            # max_tokens=1000,  # Maximum length of response
-            # top_p=1.0,       # Nucleus sampling parameter
-        )
+        # Show a spinner while the API call is in progress
+        with st.spinner("🤔 Thinking..."):
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",  # Using GPT-4o-mini for cost efficiency
+                messages=[
+                    {"role": m["role"], "content": m["content"]} 
+                    for m in st.session_state.messages
+                ],
+                # Optional parameters you can experiment with:
+                # temperature=0.7,  # Controls randomness (0.0 = deterministic, 1.0 = very random)
+                # max_tokens=1000,  # Maximum length of response
+                # top_p=1.0,       # Nucleus sampling parameter
+            )
         
         # Extract the response content from the API response
         reply = response.choices[0].message.content
@@ -126,8 +143,41 @@ if prompt := st.chat_input("Ask the bot anything..."):
             st.markdown(reply)
             
     except Exception as e:
-        # Handle API errors gracefully
-        error_msg = f"❌ **API Error**: {str(e)}"
+        # Handle API errors gracefully with more specific error messages
+        error_type = type(e).__name__
+        
+        if "AuthenticationError" in error_type or "InvalidApiKey" in str(e):
+            error_msg = """
+            ❌ **Authentication Error**
+            
+            Your OpenAI API key appears to be invalid or expired. Please:
+            1. Check your API key is correct
+            2. Verify it has sufficient credits
+            3. Ensure it's properly set as an environment variable
+            
+            Get a new key at: https://platform.openai.com/api-keys
+            """
+        elif "RateLimitError" in error_type:
+            error_msg = """
+            ⏰ **Rate Limit Exceeded**
+            
+            You've hit OpenAI's rate limit. Please:
+            1. Wait a few minutes before trying again
+            2. Check your usage in the OpenAI dashboard
+            3. Consider upgrading your plan if needed
+            """
+        elif "APIConnectionError" in error_type:
+            error_msg = """
+            🌐 **Connection Error**
+            
+            Unable to connect to OpenAI's servers. Please:
+            1. Check your internet connection
+            2. Try again in a few moments
+            3. Verify OpenAI's service status
+            """
+        else:
+            error_msg = f"❌ **API Error ({error_type})**: {str(e)}"
+        
         st.session_state.messages.append({"role": "assistant", "content": error_msg})
         with st.chat_message("assistant"):
             st.markdown(error_msg)

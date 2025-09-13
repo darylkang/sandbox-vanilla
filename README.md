@@ -1,28 +1,47 @@
 # 🤖 Educational LLM Chatbot
 
-A comprehensive learning example demonstrating how to build a ChatGPT-like interface using Streamlit and OpenAI's API. This project is designed for educational purposes to help you understand the fundamentals of LLM integration and chat interface development.
+**Stage 1: Modularized Architecture**
+
+A comprehensive learning example demonstrating how to build a ChatGPT-like interface using Streamlit and OpenAI's API with clean modular architecture. This project is designed for educational purposes to help you understand the fundamentals of LLM integration, chat interface development, and software architecture patterns.
 
 ## 🎯 Learning Objectives
 
 By working through this project, you will learn:
 
-- **Streamlit Basics**: How to create interactive web apps with Python
-- **Session State Management**: Maintaining conversation history across app interactions
-- **OpenAI API Integration**: Connecting to and using large language models
-- **Chat UI Patterns**: Building modern conversational interfaces
-- **Error Handling**: Graceful handling of API failures and edge cases
-- **Environment Configuration**: Secure API key management
+- **Modular Architecture**: Clean separation of concerns with package structure
+- **Configuration Management**: Centralized handling of API keys and settings
+- **Provider Pattern**: Abstracted LLM service integration
+- **Storage Interfaces**: Pluggable chat history implementations
+- **Error Handling**: User-friendly error message mapping
+- **Streamlit Integration**: Building apps with custom packages
+- **Dependency Injection**: Loose coupling through interfaces
 
-## 🏗️ Architecture Overview
+## 🏗️ Stage 1 Architecture Overview
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Streamlit UI  │    │   Session State  │    │   OpenAI API    │
+│   Streamlit UI  │    │   chat_core/     │    │   OpenAI API    │
 │                 │    │                  │    │                 │
-│ • Chat Input    │◄──►│ • Message History│◄──►│ • GPT-4o-mini   │
-│ • Message Display│    │ • Conversation   │    │ • Chat Completions│
-│ • Sidebar Info  │    │ • State Persistence│   │ • Response Handling│
+│ • Chat Input    │◄──►│ • config.py      │◄──►│ • GPT-4o-mini   │
+│ • Message Display│    │ • provider.py    │    │ • Chat Completions│
+│ • Sidebar Info  │    │ • history.py     │    │ • Response Handling│
+│                 │    │ • errors.py      │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+## 📁 Project Structure
+
+```
+sandbox-vanilla/
+├── app.py                 # Main Streamlit application
+├── chat_core/            # Core chat functionality package
+│   ├── __init__.py       # Package initialization
+│   ├── config.py         # Configuration management
+│   ├── provider.py       # LLM provider abstraction
+│   ├── history.py        # Chat history storage interfaces
+│   └── errors.py         # Error handling and humanization
+├── requirements.txt      # Python dependencies
+└── README.md            # This file
 ```
 
 ## 🚀 Quick Start
@@ -65,45 +84,54 @@ By working through this project, you will learn:
 
 5. **Open your browser** to `http://localhost:8501`
 
-## 📚 Code Walkthrough
+## 📚 Module Documentation
 
-### Key Components
-
-#### 1. **Session State Management**
+### **chat_core/config.py** - Configuration Management
 ```python
-if "messages" not in st.session_state:
-    st.session_state.messages: List[Dict[str, str]] = []
-```
-- Maintains conversation history across app reruns
-- Essential for chat applications to remember context
+from chat_core.config import load_config
 
-#### 2. **API Client Configuration**
-```python
-def get_client() -> OpenAI:
-    api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-    return OpenAI(api_key=api_key)
+# Loads configuration with fallback: Streamlit secrets -> environment variables
+config = load_config()
 ```
-- Handles API key retrieval from multiple sources
-- Provides clear error messages for missing keys
+- **ChatConfig**: Container for API key, model, and parameters
+- **load_config_from_streamlit()**: Load from Streamlit secrets
+- **load_config_from_env()**: Load from environment variables
+- **load_config()**: Main function with automatic fallback
 
-#### 3. **Message Processing Loop**
+### **chat_core/provider.py** - LLM Provider Abstraction
 ```python
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-```
-- Renders conversation history on each app refresh
-- Uses Streamlit's chat components for modern UI
+from chat_core.provider import OpenAIProvider
 
-#### 4. **API Integration**
-```python
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-)
+provider = OpenAIProvider(config)
+response = provider.complete(messages)
 ```
-- Sends entire conversation context to the API
-- Maintains conversation continuity
+- **LLMProvider**: Abstract base class for LLM services
+- **OpenAIProvider**: OpenAI Chat Completions implementation
+- **complete()**: Unified interface for generating responses
+
+### **chat_core/history.py** - Chat History Storage
+```python
+from chat_core.history import StreamlitStore
+
+chat_store = StreamlitStore()
+chat_store.add_message("user", "Hello")
+messages = chat_store.get_messages()
+```
+- **ChatStore**: Abstract interface for message storage
+- **StreamlitStore**: Streamlit session state implementation
+- **add_message()**, **get_messages()**, **clear()**: Storage operations
+
+### **chat_core/errors.py** - Error Handling
+```python
+from chat_core.errors import humanize_error
+
+try:
+    # API call
+except Exception as e:
+    error_msg = humanize_error(e)
+```
+- **humanize_error()**: Converts technical errors to user-friendly messages
+- Handles authentication, rate limiting, connection, and other errors
 
 ## 🔧 Customization Ideas
 
@@ -182,25 +210,31 @@ messages = [system_message] + st.session_state.messages
 - Consider implementing conversation length limits
 - Add conversation export/import functionality
 
-## 🎯 Next Steps
+## 🚀 Future Stages
 
-### Beginner Level
-- [ ] Try different models and compare responses
-- [ ] Experiment with temperature settings
-- [ ] Add conversation export functionality
+### **Stage 2: FastAPI Sidecar**
+- REST API endpoints for chat functionality
+- WebSocket support for real-time streaming
+- API documentation with OpenAPI/Swagger
+- Authentication and rate limiting
 
-### Intermediate Level
-- [ ] Implement conversation persistence (database)
-- [ ] Add custom system prompts
-- [ ] Create conversation templates
-- [ ] Add file upload capabilities
+### **Stage 3: Redis Streaming & Persistence**
+- Redis-based message streaming
+- Persistent conversation storage
+- Real-time collaboration features
+- Message queuing and processing
 
-### Advanced Level
-- [ ] Implement streaming responses
-- [ ] Add conversation search and filtering
-- [ ] Create user authentication
-- [ ] Add conversation analytics
-- [ ] Implement conversation sharing
+### **Stage 4: Multiple Provider Support**
+- Anthropic Claude integration
+- Google Gemini support
+- Local model support (Ollama)
+- Provider switching and load balancing
+
+### **Stage 5: Advanced Features**
+- Conversation search and filtering
+- User authentication and sessions
+- Conversation analytics and insights
+- File upload and document processing
 
 ## 📖 Additional Resources
 

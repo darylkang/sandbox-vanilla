@@ -39,7 +39,7 @@ sandbox-vanilla/
 ├── compose.yaml            # Redis setup
 ├── Makefile               # Development commands
 └── .env.sample            # Environment template
-```
+``````
 
 ## 🚀 Quick Start
 

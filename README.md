@@ -287,6 +287,13 @@ messages = [system_message] + st.session_state.messages
 - **Text not readable**: CSS uses translucent colors that adapt to both light and dark themes
 - **Custom theming**: Streamlit has limited theming options; for full control, consider a custom frontend
 
+### UI Theming & Limitations
+- **Built-in theme only**: This app uses Streamlit's built-in theme system exclusively
+- **No runtime theme toggle**: Theme switching is handled through Streamlit's native settings menu
+- **Minimal CSS**: Only essential styling is applied to prevent conflicts with Streamlit's theme system
+- **Header clipping**: If the title appears clipped, try a hard refresh and ensure you're on the latest code
+- **Debug mode**: Set `DEBUG_UI=1` environment variable to see UI diagnostics in the sidebar
+
 ## 🔄 Redis-backed History (Optional)
 
 ### **Why Redis?**

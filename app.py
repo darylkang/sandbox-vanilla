@@ -21,6 +21,7 @@ Key Learning Concepts:
 import logging
 import uuid
 import json
+import os
 import streamlit as st
 from chat_core.config import load_config
 from chat_core.provider import OpenAIProvider
@@ -34,6 +35,9 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
+# Debug mode for UI diagnostics
+DEBUG_UI = bool(int(os.getenv("DEBUG_UI", "0")))
 
 # Set the page title and configuration
 st.set_page_config(
@@ -92,14 +96,14 @@ st.markdown("""
 <style>
 /* Typography and layout */
 .block-container { 
-  padding-top: 1.25rem; 
+  padding-top: 2rem; 
   padding-bottom: 2rem; 
   max-width: 900px; 
 }
 h1, h2, h3 { 
-  letter-spacing: .2px; 
-  margin-top: .25rem; 
-  margin-bottom: .25rem; 
+  letter-spacing: 0.01em; 
+  line-height: 1.25; 
+  margin: 0.25rem 0 0.25rem 0; 
 }
 
 /* Chat bubbles (theme-friendly) */
@@ -139,9 +143,6 @@ h1, h2, h3 {
 .dot:nth-child(2){ animation-delay:.2s; }
 .dot:nth-child(3){ animation-delay:.4s; }
 @keyframes blink { 0%,80%,100% { opacity:.2 } 40% { opacity:1 } }
-
-/* Footer spacing */
-footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -286,3 +287,17 @@ with st.sidebar:
     - Error handling
     - Clean UI design
     """)
+    
+    # Debug diagnostics (only when DEBUG_UI=1)
+    if DEBUG_UI:
+        st.subheader("🔧 Debug")
+        st.text("UI Diagnostics:")
+        st.text("• Block container padding-top: 2rem")
+        st.text("• Heading line-height: 1.25")
+        st.text("• Heading margins: 0.25rem 0")
+        st.text("• Letter spacing: 0.01em")
+        st.text("")
+        st.text("If header still clips:")
+        st.text("• Check browser DevTools")
+        st.text("• Look for CSS overrides")
+        st.text("• Try hard refresh")

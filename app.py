@@ -73,8 +73,15 @@ else:
     chat_store = StreamlitStore()
     backend_label = "Streamlit"
 
+# Initialize session state defaults
+st.session_state.setdefault("generating", False)
+st.session_state.setdefault("stop_requested", False)
+
 # Log startup information
 logging.info(f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}")
+
+# Define UI controls unconditionally at top level
+stream_on = st.checkbox("Stream replies", value=True, help="Show tokens as they arrive", key="stream_checkbox")
 
 
 # Display chat messages from history on app rerun
@@ -118,7 +125,7 @@ if prompt := st.chat_input("Ask the bot anything..."):
                 status_placeholder.empty()
                 final_text = "".join(accumulator)
                 
-                # Add assistant's response to conversation history
+                # Add assistant's response to conversation history (once)
                 chat_store.add_message("assistant", final_text)
                 
                 # Update placeholder with final text
@@ -128,7 +135,7 @@ if prompt := st.chat_input("Ask the bot anything..."):
             with st.spinner("🤔 Thinking..."):
                 reply = provider.complete(chat_store.get_messages())
             
-            # Add assistant's response to conversation history
+            # Add assistant's response to conversation history (once)
             chat_store.add_message("assistant", reply)
             
             # Display the assistant's response
@@ -136,7 +143,7 @@ if prompt := st.chat_input("Ask the bot anything..."):
                 st.markdown(reply)
             
     except Exception as e:
-        # Handle errors with humanized messages
+        # Handle errors with humanized messages (single path)
         error_msg = humanize_error(e)
         chat_store.add_message("assistant", error_msg)
         with st.chat_message("assistant"):
@@ -175,7 +182,6 @@ with st.sidebar:
     # Streaming controls
     st.markdown("---")
     st.subheader("⚙️ Response Settings")
-    stream_on = st.checkbox("Stream replies", value=True, help="Show tokens as they arrive")
     
     # Stop button (only visible during generation)
     if st.session_state.get("generating", False):

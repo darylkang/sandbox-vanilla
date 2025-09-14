@@ -4,9 +4,11 @@ Chat history storage interfaces and implementations.
 Provides abstraction for storing and retrieving chat messages with
 Streamlit session state as the initial implementation.
 
+StreamlitStore uses session state which persists across reruns but not refreshes.
+This is in-memory/session-scoped storage for learning purposes.
+
 Note: RedisStore lives in chat_core/store and shares the same interface
 for persistent storage that survives browser refreshes and server restarts.
-StreamlitStore uses session state which persists across reruns but not refreshes.
 """
 
 from typing import List, Dict, Any, Optional

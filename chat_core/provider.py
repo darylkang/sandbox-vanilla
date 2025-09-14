@@ -87,6 +87,9 @@ class OpenAIProvider(LLMProvider):
         """
         Stream completion tokens from OpenAI as they arrive.
         
+        Yields non-empty text chunks as they arrive. Handles malformed events
+        defensively to prevent crashes during streaming.
+        
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.
             
@@ -94,7 +97,7 @@ class OpenAIProvider(LLMProvider):
             Text chunks as they arrive from OpenAI.
             
         Raises:
-            Exception: If the streaming fails.
+            Exception: If the streaming API call fails.
         """
         stream = self.client.chat.completions.create(
             messages=messages,
@@ -108,6 +111,6 @@ class OpenAIProvider(LLMProvider):
                 content = getattr(delta, "content", None)
                 if content:
                     yield content
-            except Exception:
+            except (AttributeError, IndexError, KeyError):
                 # Skip malformed events safely
                 continue

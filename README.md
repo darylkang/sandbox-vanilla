@@ -10,10 +10,11 @@ By working through this project, you will learn:
 
 - **Modular Architecture**: Clean separation of concerns with package structure
 - **Configuration Management**: Centralized handling of API keys and settings
-- **Provider Pattern**: Abstracted LLM service integration
+- **Provider Pattern**: Abstracted LLM service integration with streaming
 - **Storage Interfaces**: Pluggable chat history implementations
 - **Error Handling**: User-friendly error message mapping
-- **Streamlit Integration**: Building apps with custom packages
+- **Streamlit Integration**: Building apps with custom packages and real-time updates
+- **Token Streaming**: Real-time response generation with user controls
 - **Dependency Injection**: Loose coupling through interfaces
 
 ## 🏗️ Stage 1 Architecture Overview
@@ -247,6 +248,17 @@ messages = [system_message] + st.session_state.messages
 - Consider implementing conversation length limits
 - Add conversation export/import functionality
 
+### Variable Scoping Issues
+- **NameError**: Variables like `stream_on` must be defined unconditionally at top level
+- **Solution**: Move UI controls outside conditionals, use `st.session_state.setdefault()`
+- **Prevention**: Define all variables used in main logic before any conditional blocks
+
+### Redis Connection Issues
+- **Redis unreachable**: App automatically falls back to in-memory storage
+- **Warning message**: "Redis is configured but unreachable" appears once
+- **Solution**: Check Redis is running with `docker compose ps`
+- **Fallback**: App remains fully functional without Redis
+
 ## 🔄 Redis-backed History (Optional)
 
 ### **Why Redis?**
@@ -260,6 +272,7 @@ messages = [system_message] + st.session_state.messages
 - Session ID survives page refreshes and browser restarts
 - Same session ID = same conversation history
 - URL format: `http://localhost:8501?sid=abc123def456`
+- **Note**: This approach uses URL query parameters for educational purposes. In production, you'd typically use HttpOnly cookies managed by a backend service.
 
 ### **Local Quick Start with Redis**
 
@@ -292,6 +305,26 @@ messages = [system_message] + st.session_state.messages
 - Small warning appears: "Redis is configured but unreachable"
 - App remains fully functional with Streamlit session state
 - No data loss, just no persistence across restarts
+
+## 🌊 Token Streaming
+
+### **Real-time Response Generation**
+- **Stream replies**: Toggle in sidebar to show tokens as they arrive
+- **Stop button**: Appears during generation to interrupt streaming
+- **Incremental updates**: Text appears token-by-token for better UX
+- **Partial responses**: Stopped responses are saved to history
+
+### **Streaming Controls**
+- **Checkbox**: "Stream replies" (default: True) in sidebar
+- **Stop button**: Only visible during generation
+- **Status indicator**: Shows "🌊 Streaming..." during generation
+- **Fallback**: If streaming fails, reverts to non-streaming mode
+
+### **Learning Concepts**
+- Real-time UI updates with Streamlit placeholders
+- State management for streaming controls
+- Error handling in streaming contexts
+- User interaction during generation
 
 ### **Configuration Options**
 ```bash

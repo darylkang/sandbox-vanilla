@@ -90,13 +90,12 @@ sandbox-vanilla/
 ## 🎨 What's New in the UI
 
 ### **Modern Design**
-- **Styled chat bubbles** with Apple-like fonts and subtle borders
-- **Light/Dark/System theme** with automatic OS preference detection
+- **Styled chat bubbles** with translucent backgrounds that adapt to themes
+- **Built-in theme system** using Streamlit's native theming
 - **Always-on streaming** with animated typing indicators
 - **Export functionality** for Markdown and JSON
 
 ### **Enhanced Controls**
-- **Theme toggle** (System/Light/Dark) in sidebar
 - **Stop button** during generation
 - **New Chat button** for fresh conversations
 - **Temperature slider** for creativity control
@@ -109,10 +108,10 @@ sandbox-vanilla/
 - **Responsive design** with proper spacing
 
 ### **Theme System**
-- **System mode**: Follows OS dark/light preference via CSS media queries
-- **Light/Dark modes**: Force specific themes regardless of OS setting
-- **Theme toggle**: Located in sidebar for easy access
-- **Note**: Some Streamlit components may not fully respect color-scheme due to internal styling
+- **Built-in themes**: Uses Streamlit's native theme system via `.streamlit/config.toml`
+- **Theme switching**: Available through Streamlit's "Settings → Theme" menu
+- **Automatic adaptation**: CSS uses translucent colors that work in both light and dark modes
+- **Note**: For full custom theming, a custom frontend (e.g., React) is recommended
 
 ## 🌍 Environments
 
@@ -283,10 +282,10 @@ messages = [system_message] + st.session_state.messages
 - **Fallback**: App remains fully functional without Redis
 
 ### Theme Issues
-- **Dark mode looks wrong**: Ensure you're on the latest app and refresh; theme is applied via CSS variables
-- **System theme not working**: Check your OS dark mode settings; System mode uses CSS media queries
-- **Text not readable**: Theme variables ensure proper contrast; try switching themes
-- **Theme not switching**: Some Streamlit components may not fully respect color-scheme; this is a known limitation
+- **Theme not switching**: Use Streamlit's "Settings → Theme" menu (hamburger menu → Settings)
+- **Dark mode looks wrong**: Check Streamlit's theme settings; the app uses built-in theme system
+- **Text not readable**: CSS uses translucent colors that adapt to both light and dark themes
+- **Custom theming**: Streamlit has limited theming options; for full control, consider a custom frontend
 
 ## 🔄 Redis-backed History (Optional)
 

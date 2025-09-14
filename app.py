@@ -44,7 +44,7 @@ st.set_page_config(
 
 # Header section
 st.title("Personal Chatbot")
-st.markdown("*Streaming by default • Session history in Redis (optional)*")
+st.caption("Streaming by default • Optional Redis-backed session history")
 
 # Load configuration and initialize provider once
 try:
@@ -83,153 +83,67 @@ else:
 st.session_state.setdefault("generating", False)
 st.session_state.setdefault("stop_requested", False)
 st.session_state.setdefault("temperature", 0.7)
-st.session_state.setdefault("theme", "system")
 
 # Log startup information
 logging.info(f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}")
 
-# Inject base CSS with media queries for System mode
+# Inject minimal theme-aware CSS
 st.markdown("""
 <style>
-/* Base font and shared styles */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+/* Typography and layout */
+.block-container { 
+  padding-top: 1.25rem; 
+  padding-bottom: 2rem; 
+  max-width: 900px; 
+}
+h1, h2, h3 { 
+  letter-spacing: .2px; 
+  margin-top: .25rem; 
+  margin-bottom: .25rem; 
 }
 
-/* Light theme variables (default) */
-:root {
-  --bg: #ffffff;
-  --surface: #f7f7f8;
-  --text: #0b0b0c;
-  --muted: #6b6f76;
-  --border: #e5e7eb;
-  --primary: #0a84ff;
-  --bubble-user-bg: #e8f0ff;
-  --bubble-assist-bg: #f7f7f8;
-}
-
-/* Dark theme variables (via media query for System mode) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b0b0c;
-    --surface: #141416;
-    --text: #f5f6f7;
-    --muted: #a0a4ab;
-    --border: #2a2d32;
-    --primary: #0a84ff;
-    --bubble-user-bg: #1b2230;
-    --bubble-assist-bg: #1a1b1e;
-  }
-}
-
-/* Apply backgrounds with high specificity */
-.stApp, .block-container {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-}
-
-.block-container {
-  padding-top: 1.25rem;
-  padding-bottom: 2rem;
-}
-
-h1, h2, h3 {
-  color: var(--text) !important;
-  margin-top: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-/* Ensure text elements use theme colors */
-p, li, div, span {
-  color: var(--text);
-}
-
-/* Chat bubbles */
+/* Chat bubbles (theme-friendly) */
 .chat-bubble {
-  padding: 0.75rem 1rem;
-  border-radius: 14px;
-  margin: 0.25rem 0 0.8rem 0;
-  border: 1px solid var(--border);
-  color: var(--text);
+  padding: .75rem 1rem; 
+  border-radius: 14px; 
+  margin: .25rem 0 .8rem 0;
+  border: 1px solid rgba(0,0,0,0.06); 
 }
-
+/* Improve border contrast in dark mode using media query */
+@media (prefers-color-scheme: dark) {
+  .chat-bubble { border-color: rgba(255,255,255,0.12); }
+}
+/* Role-specific backgrounds using translucent fills that adapt in both themes */
 .chat-user {
-  background: var(--bubble-user-bg);
+  background: rgba(10,132,255,0.10); /* primary tint, subtle */
 }
-
 .chat-assistant {
-  background: var(--bubble-assist-bg);
+  background: rgba(127,127,127,0.10); /* neutral tint */
 }
 
 /* Typing indicator */
-.typing {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: var(--muted);
+.typing { 
+  display:inline-flex; 
+  align-items:center; 
+  gap:.35rem; 
+  opacity:.75; 
 }
-
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  display: inline-block;
-  animation: blink 1.2s infinite ease-in-out;
+.dot { 
+  width:6px; 
+  height:6px; 
+  border-radius:50%; 
+  background: currentColor; 
+  display:inline-block; 
+  animation: blink 1.2s infinite ease-in-out; 
 }
-
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes blink {
-  0%, 80%, 100% { opacity: 0.2; }
-  40% { opacity: 1; }
-}
+.dot:nth-child(2){ animation-delay:.2s; }
+.dot:nth-child(3){ animation-delay:.4s; }
+@keyframes blink { 0%,80%,100% { opacity:.2 } 40% { opacity:1 } }
 
 /* Footer spacing */
 footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
-
-# Theme-specific CSS injection based on user selection
-theme_choice = st.session_state["theme"]
-if theme_choice == "light":
-    st.markdown("""
-    <style>
-    :root {
-      color-scheme: light;
-      --bg: #ffffff;
-      --surface: #f7f7f8;
-      --text: #0b0b0c;
-      --muted: #6b6f76;
-      --border: #e5e7eb;
-      --primary: #0a84ff;
-      --bubble-user-bg: #e8f0ff;
-      --bubble-assist-bg: #f7f7f8;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-elif theme_choice == "dark":
-    st.markdown("""
-    <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b0b0c;
-      --surface: #141416;
-      --text: #f5f6f7;
-      --muted: #a0a4ab;
-      --border: #2a2d32;
-      --primary: #0a84ff;
-      --bubble-user-bg: #1b2230;
-      --bubble-assist-bg: #1a1b1e;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 # Helper functions
 def render_message(msg: dict):
@@ -312,13 +226,6 @@ with st.sidebar:
     st.subheader("📋 Session")
     st.caption(f"Env: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
     
-    # Theme selection
-    st.subheader("🎨 Theme")
-    theme_choice = st.radio("Theme", ["System", "Light", "Dark"], 
-                           index=["System", "Light", "Dark"].index(st.session_state["theme"].title()),
-                           key="theme_radio")
-    st.session_state["theme"] = theme_choice.lower()
-    
     # History
     st.subheader("💬 History")
     message_count = chat_store.get_message_count()
@@ -374,8 +281,8 @@ with st.sidebar:
     st.markdown("""
     **Key Concepts:**
     - Always-on streaming
-    - Theme system
+    - Built-in theme system
     - Persistent history
     - Error handling
-    - Modern UI design
+    - Clean UI design
     """)

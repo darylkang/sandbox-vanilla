@@ -1,0 +1,15 @@
+[theme]
+# Gruvbox Dark Theme
+primaryColor = "#b8bb26"  # Gruvbox bright green
+backgroundColor = "#282828"  # Gruvbox bg0
+secondaryBackgroundColor = "#3c3836"  # Gruvbox bg1
+textColor = "#ebdbb2"  # Gruvbox fg1
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false

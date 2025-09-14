@@ -99,77 +99,229 @@ logging.info(
     f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model} | Temperature: {config.openai_temperature}"
 )
 
-# Minimal dark theme
+# Gruvbox theme enhancements (working with Streamlit's built-in theme)
 st.markdown("""
 <style>
-/* Simple dark theme */
-.stApp {
-    background-color: #0e1117;
-    color: #fafafa;
+/* Gruvbox color palette */
+:root {
+    --gruvbox-bg0: #282828;
+    --gruvbox-bg1: #3c3836;
+    --gruvbox-bg2: #504945;
+    --gruvbox-fg0: #fbf1c7;
+    --gruvbox-fg1: #ebdbb2;
+    --gruvbox-fg2: #d5c4a1;
+    --gruvbox-red: #cc241d;
+    --gruvbox-green: #98971a;
+    --gruvbox-yellow: #d79921;
+    --gruvbox-blue: #458588;
+    --gruvbox-purple: #b16286;
+    --gruvbox-aqua: #689d6a;
+    --gruvbox-orange: #d65d0e;
+    --gruvbox-bright-green: #b8bb26;
+    --gruvbox-bright-yellow: #fabd2f;
+    --gruvbox-bright-blue: #83a598;
+    --gruvbox-bright-purple: #d3869b;
+    --gruvbox-bright-aqua: #8ec07c;
+    --gruvbox-bright-orange: #fe8019;
 }
 
-.stApp .main .block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-/* Chat messages */
+/* Enhance chat messages with gruvbox styling */
 .stChatMessage {
-    background-color: #262730;
-    border: 1px solid #3a3a4a;
-    border-radius: 10px;
-    margin: 1rem 0;
-    padding: 1rem;
+    border-radius: 12px !important;
+    margin: 1rem 0 !important;
+    padding: 1rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Sidebar */
+.stChatMessage[data-testid="user"] {
+    border-left: 4px solid var(--gruvbox-bright-blue) !important;
+}
+
+.stChatMessage[data-testid="assistant"] {
+    border-left: 4px solid var(--gruvbox-bright-purple) !important;
+}
+
+/* Enhance sidebar with gruvbox accents */
 .stSidebar {
-    background-color: #1a1a2e;
+    border-right: 3px solid var(--gruvbox-bright-purple) !important;
 }
 
-/* Buttons */
+.stSidebar h3 {
+    color: var(--gruvbox-bright-aqua) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Gruvbox-style buttons */
 .stButton > button {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
+    background: linear-gradient(135deg, var(--gruvbox-bright-green), var(--gruvbox-green)) !important;
+    color: var(--gruvbox-bg0) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .stButton > button:hover {
-    background-color: #ff5252;
+    background: linear-gradient(135deg, var(--gruvbox-green), var(--gruvbox-bright-green)) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Input */
-.stChatInput > div > div > div {
-    background-color: #262730;
-    border: 1px solid #3a3a4a;
-    border-radius: 10px;
-    color: #fafafa;
+/* Download buttons with gruvbox orange */
+.stDownloadButton > button {
+    background: linear-gradient(135deg, var(--gruvbox-bright-orange), var(--gruvbox-orange)) !important;
+    color: var(--gruvbox-bg0) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.2s ease !important;
 }
 
-.stChatInput > div > div > div:focus {
-    border-color: #ff6b6b;
-    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+.stDownloadButton > button:hover {
+    background: linear-gradient(135deg, var(--gruvbox-orange), var(--gruvbox-bright-orange)) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* Metrics */
+/* Gruvbox-style metrics */
 .stMetric {
-    background-color: #262730;
-    border: 1px solid #3a3a4a;
-    border-radius: 10px;
-    padding: 1rem;
+    background: var(--gruvbox-bg1) !important;
+    border: 2px solid var(--gruvbox-bright-aqua) !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    margin: 0.5rem 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Slider */
+.stMetric label {
+    color: var(--gruvbox-bright-yellow) !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Gruvbox-style slider */
+.stSlider {
+    margin: 1rem 0 !important;
+}
+
 .stSlider > div > div > div {
-    background-color: #262730;
-    border-radius: 5px;
+    background: var(--gruvbox-bg1) !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--gruvbox-bg2) !important;
 }
 
 .stSlider > div > div > div > div {
-    background-color: #ff6b6b;
+    background: var(--gruvbox-bright-green) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stSlider label {
+    color: var(--gruvbox-fg1) !important;
+    font-weight: 600 !important;
+}
+
+/* Gruvbox-style code blocks */
+.stMarkdown pre {
+    background: var(--gruvbox-bg1) !important;
+    border: 2px solid var(--gruvbox-bright-yellow) !important;
+    border-radius: 8px !important;
+    color: var(--gruvbox-bright-yellow) !important;
+    font-family: 'Courier New', monospace !important;
+    padding: 1rem !important;
+}
+
+.stMarkdown code {
+    background: var(--gruvbox-bg2) !important;
+    color: var(--gruvbox-bright-green) !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 4px !important;
+    font-family: 'Courier New', monospace !important;
+    border: 1px solid var(--gruvbox-green) !important;
+}
+
+/* Gruvbox-style links */
+.stMarkdown a {
+    color: var(--gruvbox-bright-aqua) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+.stMarkdown a:hover {
+    color: var(--gruvbox-bright-blue) !important;
+    text-decoration: underline !important;
+}
+
+/* Typing indicator with gruvbox colors */
+.typing {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    color: var(--gruvbox-bright-aqua) !important;
+    font-weight: 600 !important;
+}
+
+.dot {
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    background: var(--gruvbox-bright-aqua) !important;
+    display: inline-block !important;
+    animation: gruvbox-blink 1.5s infinite ease-in-out !important;
+}
+
+.dot:nth-child(2) { animation-delay: 0.3s !important; }
+.dot:nth-child(3) { animation-delay: 0.6s !important; }
+
+@keyframes gruvbox-blink {
+    0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Enhance the main title */
+h1 {
+    color: var(--gruvbox-bright-aqua) !important;
+    text-shadow: 0 0 10px rgba(142, 192, 124, 0.3) !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.stCaption {
+    color: var(--gruvbox-bright-yellow) !important;
+    font-weight: 500 !important;
+    opacity: 0.9 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gruvbox-bg1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gruvbox-bright-purple);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gruvbox-bright-aqua);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -220,10 +372,10 @@ if prompt := st.chat_input("Ask anything..."):
             placeholder = st.empty()
             accumulator = []
 
-            # Show animated typing indicator
+            # Show animated typing indicator with gruvbox styling
             typing_placeholder = st.empty()
             typing_placeholder.markdown(
-                '<div style="display: inline-flex; align-items: center; gap: 0.5rem; color: #ff6b6b;">Generating response <span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite;"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite; animation-delay: 0.3s;"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite; animation-delay: 0.6s;"></span></div>',
+                '<div class="typing">Generating response <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>',
                 unsafe_allow_html=True,
             )
 

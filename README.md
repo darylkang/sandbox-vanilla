@@ -14,31 +14,31 @@ A clean, modular ChatGPT-like interface built with Streamlit and OpenAI. Perfect
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Streamlit UI  │◄──►│   chat_core/    │◄──►│   OpenAI API    │
-│                 │    │                 │    │                 │
-│ • Chat Input    │    │ • config.py     │    │ • GPT-4o-mini   │
-│ • Messages      │    │ • provider.py   │    │ • Streaming     │
-│ • Sidebar       │    │ • history.py    │    │ • Completions   │
-│                 │    │ • errors.py     │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
++---------------------+    +---------------------+    +---------------------+
+|   Streamlit UI      |<-->|     chat_core/      |<-->|     OpenAI API      |
+|                     |    |                     |    |                     |
+| • Chat Input        |    | • config.py         |    | • GPT-4o-mini       |
+| • Messages          |    | • provider.py       |    | • Streaming         |
+| • Sidebar           |    | • history.py        |    | • Completions       |
+|                     |    | • errors.py         |    |                     |
++---------------------+    +---------------------+    +---------------------+
 ```
 
 ## 📁 Project Structure
 
 ```
 sandbox-vanilla/
-├── app.py                    # Main Streamlit app
-├── chat_core/               # Core chat package
-│   ├── config.py            # Configuration management
-│   ├── provider.py          # OpenAI integration
-│   ├── history.py           # Chat storage interfaces
-│   ├── errors.py            # Error handling
-│   └── session.py           # Session management
-├── requirements.txt         # Dependencies
-├── compose.yaml            # Redis setup
-├── Makefile               # Development commands
-└── .env.sample            # Environment template
+├── app.py             # Main Streamlit app
+├── chat_core/         # Core chat package
+│   ├── config.py      # Configuration management
+│   ├── provider.py    # OpenAI integration
+│   ├── history.py     # Chat storage interfaces
+│   ├── errors.py      # Error handling
+│   └── session.py     # Session management
+├── requirements.txt   # Dependencies
+├── compose.yaml       # Redis setup
+├── Makefile           # Development commands
+└── .env.sample        # Environment template
 ``````
 
 ## 🚀 Quick Start

@@ -2,10 +2,10 @@
 LLM provider abstraction and OpenAI implementation.
 
 Provides a unified interface for different LLM services with OpenAI
-as the initial implementation.
+as the initial implementation, including both batch and streaming completions.
 """
 
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Iterator
 from openai import OpenAI
 from .config import ChatConfig, AppConfig
 
@@ -25,6 +25,21 @@ class LLMProvider:
             
         Raises:
             Exception: If the completion fails.
+        """
+        raise NotImplementedError
+    
+    def stream_complete(self, messages: List[Dict[str, str]]) -> Iterator[str]:
+        """
+        Stream completion tokens as they arrive.
+        
+        Args:
+            messages: List of message dictionaries with 'role' and 'content' keys.
+            
+        Yields:
+            Text chunks as they arrive from the provider.
+            
+        Raises:
+            Exception: If the streaming fails.
         """
         raise NotImplementedError
 
@@ -67,3 +82,32 @@ class OpenAIProvider(LLMProvider):
         )
         
         return response.choices[0].message.content
+    
+    def stream_complete(self, messages: List[Dict[str, str]]) -> Iterator[str]:
+        """
+        Stream completion tokens from OpenAI as they arrive.
+        
+        Args:
+            messages: List of message dictionaries with 'role' and 'content' keys.
+            
+        Yields:
+            Text chunks as they arrive from OpenAI.
+            
+        Raises:
+            Exception: If the streaming fails.
+        """
+        stream = self.client.chat.completions.create(
+            messages=messages,
+            stream=True,
+            **self.config.to_dict()
+        )
+        
+        for event in stream:
+            try:
+                delta = event.choices[0].delta
+                content = getattr(delta, "content", None)
+                if content:
+                    yield content
+            except Exception:
+                # Skip malformed events safely
+                continue

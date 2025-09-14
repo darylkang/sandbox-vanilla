@@ -91,17 +91,49 @@ if prompt := st.chat_input("Ask the bot anything..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Reset streaming state
+    st.session_state["stop_requested"] = False
+    st.session_state["generating"] = True
+
     # Generate response using the provider
     try:
-        with st.spinner("🤔 Thinking..."):
-            reply = provider.complete(chat_store.get_messages())
-        
-        # Add assistant's response to conversation history
-        chat_store.add_message("assistant", reply)
-        
-        # Display the assistant's response
-        with st.chat_message("assistant"):
-            st.markdown(reply)
+        if stream_on:
+            # Streaming response
+            with st.chat_message("assistant"):
+                placeholder = st.empty()
+                accumulator = []
+                
+                # Show streaming status
+                status_placeholder = st.empty()
+                status_placeholder.info("🌊 Streaming...")
+                
+                # Stream tokens
+                for chunk in provider.stream_complete(chat_store.get_messages()):
+                    if st.session_state.get("stop_requested", False):
+                        break
+                    accumulator.append(chunk)
+                    placeholder.markdown("".join(accumulator))
+                
+                # Clear status and finalize
+                status_placeholder.empty()
+                final_text = "".join(accumulator)
+                
+                # Add assistant's response to conversation history
+                chat_store.add_message("assistant", final_text)
+                
+                # Update placeholder with final text
+                placeholder.markdown(final_text)
+        else:
+            # Non-streaming response (existing behavior)
+            with st.spinner("🤔 Thinking..."):
+                reply = provider.complete(chat_store.get_messages())
+            
+            # Add assistant's response to conversation history
+            chat_store.add_message("assistant", reply)
+            
+            # Display the assistant's response
+            with st.chat_message("assistant"):
+                st.markdown(reply)
             
     except Exception as e:
         # Handle errors with humanized messages
@@ -109,6 +141,10 @@ if prompt := st.chat_input("Ask the bot anything..."):
         chat_store.add_message("assistant", error_msg)
         with st.chat_message("assistant"):
             st.markdown(error_msg)
+    
+    finally:
+        # Reset generation state
+        st.session_state["generating"] = False
 
 # Add educational sidebar with learning resources
 with st.sidebar:
@@ -127,12 +163,25 @@ with st.sidebar:
     
     🛡️ **Error Handling**: User-friendly error messages
     
+    🌊 **Token Streaming**: Real-time response generation
+    
     **Architecture Components:**
     - `config.py`: API key and model configuration
-    - `provider.py`: OpenAI provider implementation
+    - `provider.py`: OpenAI provider with streaming
     - `history.py`: Streamlit storage implementation
     - `errors.py`: Error message humanization
     """)
+    
+    # Streaming controls
+    st.markdown("---")
+    st.subheader("⚙️ Response Settings")
+    stream_on = st.checkbox("Stream replies", value=True, help="Show tokens as they arrive")
+    
+    # Stop button (only visible during generation)
+    if st.session_state.get("generating", False):
+        if st.button("🛑 Stop", help="Stop the current response generation"):
+            st.session_state["stop_requested"] = True
+            st.rerun()
     
     # Show current conversation stats
     message_count = chat_store.get_message_count()

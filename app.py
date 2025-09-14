@@ -18,12 +18,10 @@ Key Learning Concepts:
 - Modern UI design and state management
 """
 
-import html
 import json
 import logging
 import os
 import uuid
-from datetime import datetime
 from typing import Dict, List
 
 import streamlit as st
@@ -101,181 +99,15 @@ logging.info(
     f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model} | Temperature: {config.openai_temperature}"
 )
 
-# Inject refined theme-aware CSS
+# Minimal CSS for clean layout
 st.markdown(
     """
 <style>
-/* System font stack for Apple-esque typography */
-* {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Container & typography */
+/* Simple container width */
 .block-container {
-  max-width: 900px;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-
-h1, h2, h3 {
-  margin: .25rem 0;
-  line-height: 1.25;
-  letter-spacing: .01em;
-}
-
-/* Chat bubbles with refined styling */
-.bubble {
-  padding: .75rem 1rem;
-  border-radius: 14px;
-  margin: .25rem 0 .9rem;
-  border: 1px solid rgba(0,0,0,0.06);
-  position: relative;
-}
-
-.bubble.user {
-  background: rgba(10,132,255,0.10);
-}
-
-.bubble.assistant {
-  background: rgba(127,127,127,0.10);
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .bubble {
-    border-color: rgba(255,255,255,0.12);
-  }
-  .bubble.user {
-    background: rgba(10,132,255,0.18);
-  }
-  .bubble.assistant {
-    background: rgba(255,255,255,0.06);
-  }
-}
-
-/* Message row with avatar and content */
-.row {
-  display: flex;
-  gap: .6rem;
-  align-items: flex-start;
-  margin-bottom: .5rem;
-}
-
-.avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  background: transparent;
-  flex-shrink: 0;
-  margin-top: .2rem;
-}
-
-.meta {
-  font-size: 12px;
-  opacity: .7;
-  margin-top: .35rem;
-  color: var(--text-color, inherit);
-}
-
-/* Markdown styling inside assistant bubbles */
-.bubble.assistant h1 {
-  font-size: 1.25rem;
-  margin: .5rem 0 .25rem 0;
-}
-
-.bubble.assistant h2 {
-  font-size: 1.15rem;
-  margin: .4rem 0 .2rem 0;
-}
-
-.bubble.assistant h3 {
-  font-size: 1.05rem;
-  margin: .3rem 0 .15rem 0;
-}
-
-.bubble.assistant pre {
-  padding: .6rem .8rem;
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.06);
-  overflow: auto;
-  background: rgba(0,0,0,0.02);
-  margin: .5rem 0;
-}
-
-.bubble.assistant code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: .9em;
-  background: rgba(0,0,0,0.05);
-  padding: .1rem .3rem;
-  border-radius: 4px;
-}
-
-.bubble.assistant blockquote {
-  margin: .5rem 0;
-  padding-left: .8rem;
-  border-left: 3px solid rgba(127,127,127,0.4);
-  opacity: .9;
-}
-
-.bubble.assistant ul, .bubble.assistant ol {
-  margin: .5rem 0;
-  padding-left: 1.2rem;
-}
-
-.bubble.assistant li {
-  margin: .2rem 0;
-}
-
-.bubble.assistant table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: .5rem 0;
-}
-
-.bubble.assistant th, .bubble.assistant td {
-  border: 1px solid rgba(0,0,0,0.1);
-  padding: .4rem .6rem;
-  text-align: left;
-}
-
-.bubble.assistant th {
-  background: rgba(0,0,0,0.05);
-  font-weight: 600;
-}
-
-/* Dark mode for code blocks */
-@media (prefers-color-scheme: dark) {
-  .bubble.assistant pre {
-    border-color: rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.05);
-  }
-  .bubble.assistant code {
-    background: rgba(255,255,255,0.1);
-  }
-  .bubble.assistant th {
-    background: rgba(255,255,255,0.1);
-  }
-  .bubble.assistant th, .bubble.assistant td {
-    border-color: rgba(255,255,255,0.15);
-  }
-}
-
-/* Copy affordance */
-.actions {
-  display: flex;
-  gap: .5rem;
-  justify-content: flex-end;
-  margin-top: .25rem;
-  opacity: 0;
-  transition: opacity .15s ease;
-}
-
-.bubble:hover + .actions, .bubble:hover .actions, .row:hover .actions {
-  opacity: .9;
+  max-width: 800px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 /* Typing indicator */
@@ -302,24 +134,6 @@ h1, h2, h3 {
   0%, 80%, 100% { opacity: .2 }
   40% { opacity: 1 }
 }
-
-/* Input area styling */
-.stChatInput > div > div > div {
-  border-radius: 12px;
-}
-
-/* Subtle divider above input */
-.stChatInput {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0,0,0,0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-  .stChatInput {
-    border-top-color: rgba(255,255,255,0.12);
-  }
-}
 </style>
 """,
     unsafe_allow_html=True,
@@ -328,58 +142,12 @@ h1, h2, h3 {
 
 # Helper functions
 def render_message(msg: Dict[str, str]):
-    """Render a chat message with refined styling, avatar, and metadata."""
+    """Render a chat message using standard Streamlit components."""
     role = msg.get("role", "user")
     content = msg.get("content", "")
-    timestamp = msg.get("timestamp", "")
 
-    # Avatar emoji based on role
-    avatar = "👤" if role == "user" else "🤖"
-
-    # Create message row with avatar and bubble
     with st.chat_message(role):
-        # Use st.markdown for proper Markdown rendering in assistant messages
-        if role == "assistant":
-            # For assistant messages, render as Markdown for proper formatting
-            st.markdown(
-                f'''
-                <div class="row">
-                    <div class="avatar">{avatar}</div>
-                    <div class="bubble assistant">{content}</div>
-                </div>
-                {f'<div class="meta">{timestamp}</div>' if timestamp else ''}
-                ''',
-                unsafe_allow_html=True
-            )
-        else:
-            # For user messages, escape HTML and use simple div
-            safe_content = html.escape(content)
-            st.markdown(
-                f'''
-                <div class="row">
-                    <div class="avatar">{avatar}</div>
-                    <div class="bubble user">{safe_content}</div>
-                </div>
-                {f'<div class="meta">{timestamp}</div>' if timestamp else ''}
-                ''',
-                unsafe_allow_html=True
-            )
-
-
-def message_actions(msg: Dict[str, str]):
-    """Add copy button and other message actions."""
-    content = msg.get("content", "")
-    if content:
-        # Use st.code with copy functionality for code blocks
-        if "```" in content:
-            # Extract and display code blocks with copy functionality
-            import re
-            code_blocks = re.findall(r'```(\w+)?\n(.*?)\n```', content, re.DOTALL)
-            for lang, code in code_blocks:
-                st.code(code, language=lang or "text")
-
-        # Add a subtle copy hint
-        st.caption("💡 Hover over messages to see copy options")
+        st.markdown(content)
 
 
 def transcript_to_markdown(messages: List[Dict[str, str]]) -> str:
@@ -397,14 +165,13 @@ def transcript_to_markdown(messages: List[Dict[str, str]]) -> str:
 for msg in chat_store.get_messages():
     render_message(msg)
 
-# Input area with refined placeholder
-if prompt := st.chat_input("Ask anything... Enter to send • Shift+Enter for newline"):
-    # Add user message to conversation history with timestamp
-    timestamp = datetime.now().strftime("%H:%M")
+# Input area
+if prompt := st.chat_input("Ask anything..."):
+    # Add user message to conversation history
     chat_store.add_message("user", prompt)
 
     # Display the user's message immediately
-    render_message({"role": "user", "content": prompt, "timestamp": timestamp})
+    render_message({"role": "user", "content": prompt})
 
     # Reset streaming state
     st.session_state["stop_requested"] = False
@@ -431,17 +198,7 @@ if prompt := st.chat_input("Ask anything... Enter to send • Shift+Enter for ne
                 if st.session_state.get("stop_requested", False):
                     break
                 accumulator.append(chunk)
-                # Render partial content with new styling
-                partial_content = "".join(accumulator)
-                placeholder.markdown(
-                    f'''
-                    <div class="row">
-                        <div class="avatar">🤖</div>
-                        <div class="bubble assistant">{partial_content}</div>
-                    </div>
-                    ''',
-                    unsafe_allow_html=True,
-                )
+                placeholder.markdown("".join(accumulator))
 
             # Finalize
             final_text = "".join(accumulator)
@@ -450,18 +207,8 @@ if prompt := st.chat_input("Ask anything... Enter to send • Shift+Enter for ne
             if final_text.strip():
                 chat_store.add_message("assistant", final_text)
 
-            # Update placeholder with final text and timestamp
-            final_timestamp = datetime.now().strftime("%H:%M")
-            placeholder.markdown(
-                f'''
-                <div class="row">
-                    <div class="avatar">🤖</div>
-                    <div class="bubble assistant">{final_text}</div>
-                </div>
-                <div class="meta">{final_timestamp}</div>
-                ''',
-                unsafe_allow_html=True,
-            )
+            # Update placeholder with final text
+            placeholder.markdown(final_text)
 
     except Exception:
         # Attempt non-streaming fallback before humanizing the error
@@ -470,14 +217,12 @@ if prompt := st.chat_input("Ask anything... Enter to send • Shift+Enter for ne
                 chat_store.get_messages(), temperature=st.session_state["temperature"]
             )
             chat_store.add_message("assistant", fallback_text)
-            fallback_timestamp = datetime.now().strftime("%H:%M")
-            render_message({"role": "assistant", "content": fallback_text, "timestamp": fallback_timestamp})
+            render_message({"role": "assistant", "content": fallback_text})
         except Exception as inner:
             # Handle errors with humanized messages (single path)
             error_msg = humanize_error(inner)
             chat_store.add_message("assistant", error_msg)
-            error_timestamp = datetime.now().strftime("%H:%M")
-            render_message({"role": "assistant", "content": error_msg, "timestamp": error_timestamp})
+            render_message({"role": "assistant", "content": error_msg})
 
     finally:
         # Reset generation state and clear typing indicator

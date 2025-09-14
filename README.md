@@ -153,43 +153,9 @@ except Exception as e:
 ### Debug Mode
 Set `DEBUG_UI=1` to see UI diagnostics in the sidebar.
 
-## 🎨 Design System
+## 🎨 UI Design
 
-### Visual Philosophy
-The UI follows an "Apple-esque" minimalism approach with clean typography, generous whitespace, and subtle visual hierarchy. The design is content-first, prioritizing readability and user experience.
-
-### Layout & Typography
-- **Max Width**: 900px for optimal reading experience
-- **Font Stack**: System fonts (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`, `Segoe UI`, `Roboto`)
-- **Vertical Rhythm**: Consistent spacing between elements (0.25rem, 0.5rem, 0.75rem, 1rem)
-- **Border Radius**: 12-16px for soft, modern corners
-
-### Chat Bubbles
-- **User Messages**: Blue tint background (`rgba(10,132,255,0.10)`) with subtle border
-- **Assistant Messages**: Neutral tint background (`rgba(127,127,127,0.10)`) with proper Markdown rendering
-- **Avatars**: Simple emoji indicators (👤 for user, 🤖 for assistant)
-- **Timestamps**: Muted metadata below each message
-- **Hover Effects**: Subtle copy affordances on message hover
-
-### Theme Safety
-The design works seamlessly in both Streamlit light and dark themes using:
-- `rgba()` colors with alpha transparency
-- `@media (prefers-color-scheme: dark)` queries
-- CSS custom properties for theme adaptation
-- No JavaScript or runtime theme switching
-
-### Markdown Rendering
-Assistant messages support rich Markdown with:
-- Balanced heading sizes (h1: 1.25rem, h2: 1.15rem, h3: 1.05rem)
-- Syntax-highlighted code blocks with copy functionality
-- Styled tables, lists, and blockquotes
-- Consistent spacing and typography
-
-### Responsive Design
-- Mobile-friendly bubble layout
-- Flexible avatar and content alignment
-- Touch-friendly interaction areas
-- Graceful degradation on smaller screens
+The interface uses Streamlit's built-in chat components with minimal custom styling for a clean, readable experience. The design focuses on simplicity and functionality over complex visual elements.
 
 ## 🚀 Future Enhancements
 

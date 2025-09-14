@@ -42,11 +42,11 @@ logging.basicConfig(
 DEBUG_UI = bool(int(os.getenv("DEBUG_UI", "0")))
 
 # Set the page title and configuration
-st.set_page_config(page_title="Cyber Chat", page_icon="🌴", layout="wide")
+st.set_page_config(page_title="Cyber Chat", page_icon="🌴", layout="wide", initial_sidebar_state="expanded")
 
 # Header section
-st.title("🌴 CYBER CHAT ⚡")
-st.caption("Neural streaming • Redis-persistent sessions • Tropical vibes")
+st.title("Cyber Chat")
+st.caption("Neural streaming • Redis-persistent sessions • Professional AI interface")
 
 # Load configuration and initialize provider once
 try:
@@ -99,480 +99,80 @@ logging.info(
     f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model} | Temperature: {config.openai_temperature}"
 )
 
-# Gruvbox Cyberpunk Tropical Theme
-st.markdown(
-    """
+# Minimal dark theme
+st.markdown("""
 <style>
-/* Gruvbox color palette */
-:root {
-  --bg: #282828;
-  --bg0: #282828;
-  --bg1: #3c3836;
-  --bg2: #504945;
-  --fg: #ebdbb2;
-  --fg0: #fbf1c7;
-  --fg1: #ebdbb2;
-  --fg2: #d5c4a1;
-  --red: #cc241d;
-  --green: #98971a;
-  --yellow: #d79921;
-  --blue: #458588;
-  --purple: #b16286;
-  --aqua: #689d6a;
-  --orange: #d65d0e;
-  --gray: #928374;
-  --bright-red: #fb4934;
-  --bright-green: #b8bb26;
-  --bright-yellow: #fabd2f;
-  --bright-blue: #83a598;
-  --bright-purple: #d3869b;
-  --bright-aqua: #8ec07c;
-  --bright-orange: #fe8019;
-  --bright-gray: #a89984;
-}
-
-/* Force override Streamlit defaults */
+/* Simple dark theme */
 .stApp {
-  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
-  background-attachment: fixed !important;
-  font-family: 'Courier New', monospace !important;
-  padding: 0 !important;
-  margin: 0 !important;
+    background-color: #0e1117;
+    color: #fafafa;
 }
 
-/* Remove white bars and fix container */
-.main .block-container {
-  max-width: 900px !important;
-  padding: 1rem !important;
-  margin: 0 auto !important;
-  background: rgba(40, 40, 40, 0.95) !important;
-  border-radius: 20px !important;
-  border: 2px solid #8ec07c !important;
-  box-shadow: 0 0 30px rgba(139, 233, 253, 0.3), inset 0 0 30px rgba(139, 233, 253, 0.1) !important;
-  backdrop-filter: blur(10px) !important;
+.stApp .main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
-/* Fix main content area */
-.main {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Remove default Streamlit padding */
-.stApp > div {
-  padding: 0 !important;
-}
-
-/* Fix header area */
-.stApp header {
-  background: transparent !important;
-  border: none !important;
-}
-
-/* Fix footer area */
-.stApp footer {
-  display: none !important;
-}
-
-/* Cyberpunk title styling */
-h1 {
-  color: #8ec07c !important;
-  text-shadow: 0 0 10px #8ec07c !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: bold !important;
-  text-transform: uppercase !important;
-  letter-spacing: 2px !important;
-  margin-bottom: 0.5rem !important;
-}
-
-/* Tropical caption */
-.stCaption {
-  color: #b8bb26 !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 0.9rem !important;
-  text-shadow: 0 0 5px #b8bb26 !important;
-}
-
-/* Chat message styling - force override */
+/* Chat messages */
 .stChatMessage {
-  background: rgba(60, 56, 54, 0.8) !important;
-  border-radius: 15px !important;
-  border: 1px solid #d3869b !important;
-  margin: 1rem 0 !important;
-  padding: 1rem !important;
-  box-shadow: 0 0 15px rgba(177, 98, 134, 0.2) !important;
+    background-color: #262730;
+    border: 1px solid #3a3a4a;
+    border-radius: 10px;
+    margin: 1rem 0;
+    padding: 1rem;
 }
 
-/* User messages - tropical blue */
-.stChatMessage[data-testid="user"] {
-  background: linear-gradient(135deg, rgba(69, 133, 136, 0.3), rgba(131, 165, 152, 0.2)) !important;
-  border-color: #83a598 !important;
-  box-shadow: 0 0 15px rgba(131, 165, 152, 0.3) !important;
-}
-
-/* Assistant messages - cyberpunk purple */
-.stChatMessage[data-testid="assistant"] {
-  background: linear-gradient(135deg, rgba(177, 98, 134, 0.3), rgba(211, 134, 155, 0.2)) !important;
-  border-color: #d3869b !important;
-  box-shadow: 0 0 15px rgba(211, 134, 155, 0.3) !important;
-}
-
-/* Text styling - force override */
-.stMarkdown {
-  color: #ebdbb2 !important;
-  font-family: 'Courier New', monospace !important;
-  line-height: 1.6 !important;
-}
-
-.stMarkdown p {
-  color: #ebdbb2 !important;
-  font-family: 'Courier New', monospace !important;
-}
-
-/* Fix all text elements to be light colored */
-.stApp * {
-  color: #ebdbb2 !important;
-}
-
-/* Override specific dark text elements */
-.stApp .stText {
-  color: #ebdbb2 !important;
-}
-
-.stApp .stTextInput > div > div > input {
-  color: #ebdbb2 !important;
-}
-
-.stApp .stSelectbox > div > div > div {
-  color: #ebdbb2 !important;
-}
-
-.stApp .stSlider > div > div > div > div {
-  color: #ebdbb2 !important;
-}
-
-/* Fix button text */
-.stButton > button {
-  color: #282828 !important;
-}
-
-/* Fix metric text */
-.stMetric > div > div {
-  color: #ebdbb2 !important;
-}
-
-.stMetric > div > div > div {
-  color: #ebdbb2 !important;
-}
-
-/* Code blocks - gruvbox style */
-.stMarkdown pre {
-  background: #3c3836 !important;
-  border: 1px solid #fe8019 !important;
-  border-radius: 10px !important;
-  padding: 1rem !important;
-  color: #fabd2f !important;
-  font-family: 'Courier New', monospace !important;
-  box-shadow: 0 0 10px rgba(215, 153, 33, 0.3) !important;
-}
-
-.stMarkdown code {
-  background: #504945 !important;
-  color: #b8bb26 !important;
-  padding: 0.2rem 0.4rem !important;
-  border-radius: 4px !important;
-  font-family: 'Courier New', monospace !important;
-  border: 1px solid #98971a !important;
-}
-
-/* Links - tropical aqua */
-.stMarkdown a {
-  color: #8ec07c !important;
-  text-decoration: none !important;
-  text-shadow: 0 0 5px #8ec07c !important;
-}
-
-.stMarkdown a:hover {
-  color: #83a598 !important;
-  text-shadow: 0 0 10px #83a598 !important;
-}
-
-/* Input styling - force override */
-.stChatInput > div > div > div {
-  background: #3c3836 !important;
-  border: 2px solid #b8bb26 !important;
-  border-radius: 15px !important;
-  color: #ebdbb2 !important;
-  font-family: 'Courier New', monospace !important;
-  box-shadow: 0 0 15px rgba(184, 187, 38, 0.3) !important;
-}
-
-.stChatInput > div > div > div:focus {
-  border-color: #8ec07c !important;
-  box-shadow: 0 0 20px rgba(139, 233, 253, 0.5) !important;
-}
-
-/* Sidebar styling - force override */
+/* Sidebar */
 .stSidebar {
-  background: linear-gradient(180deg, #282828, #3c3836) !important;
-  border-right: 2px solid #d3869b !important;
+    background-color: #1a1a2e;
 }
 
-.stSidebar .stMarkdown {
-  color: #ebdbb2 !important;
-}
-
-.stSidebar .stMarkdown p {
-  color: #ebdbb2 !important;
-}
-
-/* Sidebar headers */
-.stSidebar h3 {
-  color: #8ec07c !important;
-  font-family: 'Courier New', monospace !important;
-  text-shadow: 0 0 5px #8ec07c !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-}
-
-/* Buttons - cyberpunk style */
+/* Buttons */
 .stButton > button {
-  background: linear-gradient(45deg, #d3869b, #83a598) !important;
-  color: #282828 !important;
-  border: none !important;
-  border-radius: 10px !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: bold !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  box-shadow: 0 0 15px rgba(211, 134, 155, 0.4) !important;
-  transition: all 0.3s ease !important;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
 }
 
 .stButton > button:hover {
-  background: linear-gradient(45deg, #83a598, #8ec07c) !important;
-  box-shadow: 0 0 25px rgba(139, 233, 253, 0.6) !important;
-  transform: translateY(-2px) !important;
+    background-color: #ff5252;
 }
 
-/* Slider styling */
-.stSlider > div > div > div > div {
-  background: #8ec07c !important;
-  box-shadow: 0 0 10px #8ec07c !important;
+/* Input */
+.stChatInput > div > div > div {
+    background-color: #262730;
+    border: 1px solid #3a3a4a;
+    border-radius: 10px;
+    color: #fafafa;
 }
 
-/* Metric styling */
+.stChatInput > div > div > div:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+}
+
+/* Metrics */
 .stMetric {
-  color: #ebdbb2 !important;
-  font-family: 'Courier New', monospace !important;
+    background-color: #262730;
+    border: 1px solid #3a3a4a;
+    border-radius: 10px;
+    padding: 1rem;
 }
 
-.stMetric > div > div {
-  color: #ebdbb2 !important;
-  font-family: 'Courier New', monospace !important;
+/* Slider */
+.stSlider > div > div > div {
+    background-color: #262730;
+    border-radius: 5px;
 }
 
-/* Typing indicator - cyberpunk style */
-.typing {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: .5rem !important;
-  color: #8ec07c !important;
-  font-family: 'Courier New', monospace !important;
-  text-shadow: 0 0 5px #8ec07c !important;
-}
-
-.dot {
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 50% !important;
-  background: #8ec07c !important;
-  display: inline-block !important;
-  animation: cyberpunk-blink 1.5s infinite ease-in-out !important;
-  box-shadow: 0 0 10px #8ec07c !important;
-}
-
-.dot:nth-child(2) { animation-delay: .3s !important; }
-.dot:nth-child(3) { animation-delay: .6s !important; }
-
-@keyframes cyberpunk-blink {
-  0%, 80%, 100% {
-    opacity: .3;
-    transform: scale(0.8);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-/* Tropical accent elements */
-.stApp::before {
-  content: "🌴";
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  font-size: 2rem;
-  opacity: 0.3;
-  z-index: -1;
-  animation: float 3s ease-in-out infinite;
-}
-
-.stApp::after {
-  content: "⚡";
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  font-size: 1.5rem;
-  opacity: 0.3;
-  z-index: -1;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-/* Fix body and html to remove white bars */
-html, body {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: #282828 !important;
-  overflow-x: hidden !important;
-  height: 100vh !important;
-}
-
-/* Fix Streamlit's main container */
-#root {
-  background: #282828 !important;
-  height: 100vh !important;
-}
-
-/* Fix all Streamlit containers */
-.stApp > div {
-  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
-  min-height: 100vh !important;
-  height: 100vh !important;
-}
-
-/* Fix main content area */
-.main {
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  height: 100vh !important;
-  overflow-y: auto !important;
-}
-
-/* Fix sidebar positioning */
-.stSidebar {
-  background: linear-gradient(180deg, #282828, #3c3836) !important;
-  border-right: 2px solid #d3869b !important;
-  top: 0 !important;
-  height: 100vh !important;
-  position: fixed !important;
-}
-
-/* Fix the main content area when sidebar is present */
-.main .block-container {
-  max-width: 900px !important;
-  padding: 1rem !important;
-  margin: 0 auto !important;
-  background: rgba(40, 40, 40, 0.95) !important;
-  border-radius: 20px !important;
-  border: 2px solid #8ec07c !important;
-  box-shadow: 0 0 30px rgba(139, 233, 253, 0.3), inset 0 0 30px rgba(139, 233, 253, 0.1) !important;
-  backdrop-filter: blur(10px) !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-/* Fix chat input positioning */
-.stChatInput {
-  background: transparent !important;
-  padding: 1rem !important;
-  margin: 0 !important;
-  position: relative !important;
-}
-
-/* Remove any bottom padding/margins that might cause white bars */
-.stApp footer,
-.stApp .stApp > div > div:last-child,
-.stApp .main > div:last-child {
-  display: none !important;
-}
-
-/* Fix any remaining white space */
-.stApp .stApp > div {
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* Ensure no white background shows through */
-.stApp .stApp > div > div {
-  background: transparent !important;
-}
-
-/* Target specific Streamlit elements that might cause white bars */
-.stApp .stApp > div > div > div {
-  background: transparent !important;
-}
-
-/* Fix any remaining white space at the bottom */
-.stApp .stApp > div > div > div:last-child {
-  background: transparent !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* Ensure the main content area fills the screen */
-.stApp .main {
-  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
-  min-height: 100vh !important;
-}
-
-/* Fix any Streamlit default containers */
-.stApp .stApp > div > div > div > div {
-  background: transparent !important;
-}
-
-/* Target the specific container that might be causing the white bar */
-.stApp .stApp > div > div > div > div:last-child {
-  background: transparent !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #3c3836;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d3869b;
-  border-radius: 4px;
-  box-shadow: 0 0 5px #d3869b;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #8ec07c;
-  box-shadow: 0 0 10px #8ec07c;
+.stSlider > div > div > div > div {
+    background-color: #ff6b6b;
 }
 </style>
-""",
-    unsafe_allow_html=True,
-)
-
+""", unsafe_allow_html=True)
 
 # Helper functions
 def render_message(msg: Dict[str, str]):
@@ -595,9 +195,11 @@ def transcript_to_markdown(messages: List[Dict[str, str]]) -> str:
     return "\n".join(lines)
 
 
-# Transcript rendering area
-for msg in chat_store.get_messages():
-    render_message(msg)
+# Main content area with proper container
+with st.container():
+    # Transcript rendering area
+    for msg in chat_store.get_messages():
+        render_message(msg)
 
 # Input area
 if prompt := st.chat_input("Ask anything..."):
@@ -621,7 +223,7 @@ if prompt := st.chat_input("Ask anything..."):
             # Show animated typing indicator
             typing_placeholder = st.empty()
             typing_placeholder.markdown(
-                '<div class="typing">Assistant is typing <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>',
+                '<div style="display: inline-flex; align-items: center; gap: 0.5rem; color: #ff6b6b;">Generating response <span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite;"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite; animation-delay: 0.3s;"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; display: inline-block; animation: blink 1.5s infinite; animation-delay: 0.6s;"></span></div>',
                 unsafe_allow_html=True,
             )
 
@@ -667,90 +269,90 @@ if prompt := st.chat_input("Ask anything..."):
 # Sidebar controls
 with st.sidebar:
     # Session info
-    st.subheader("⚡ NEURAL STATUS")
-    st.caption(f"Env: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
+    st.subheader("System Status")
+    st.caption(f"Environment: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
 
     # History
-    st.subheader("🌊 MESSAGE STREAM")
+    st.subheader("Message History")
     message_count = chat_store.get_message_count()
     if message_count > 0:
         st.metric("Messages", message_count)
 
         # Clear conversation button
-        if st.button("🗑️ PURGE DATA"):
+        if st.button("Clear Chat"):
             chat_store.clear()
             st.rerun()
 
         # New Chat button
-        if st.button("🆕 NEW SESSION"):
+        if st.button("New Session"):
             new_sid = uuid.uuid4().hex
             st.query_params["sid"] = new_sid
             chat_store.clear()
             st.rerun()
     else:
-        st.text("No neural activity detected")
+        st.text("No messages yet")
 
     # Export
-    st.subheader("📡 DATA EXPORT")
+    st.subheader("Export Data")
     msgs = chat_store.get_messages()
     if msgs:
         md_bytes = transcript_to_markdown(msgs).encode("utf-8")
         json_bytes = json.dumps(msgs, ensure_ascii=False, indent=2).encode("utf-8")
 
         st.download_button(
-            "📄 MARKDOWN", data=md_bytes, file_name="cyber_chat.md", mime="text/markdown"
+            "Markdown", data=md_bytes, file_name="cyber_chat.md", mime="text/markdown"
         )
         st.download_button(
-            "📋 JSON", data=json_bytes, file_name="cyber_chat.json", mime="application/json"
+            "JSON", data=json_bytes, file_name="cyber_chat.json", mime="application/json"
         )
     else:
         st.text("No data to export")
 
     # Controls
-    st.subheader("🎮 NEURAL CONTROLS")
+    st.subheader("Controls")
 
     # Stop button (only visible during generation)
     if st.session_state.get("generating", False):
-        if st.button("🛑 TERMINATE", help="Stop the current response generation"):
+        if st.button("Stop Generation", help="Stop the current response generation"):
             st.session_state["stop_requested"] = True
             st.rerun()
 
     # Model & behavior
-    st.subheader("🤖 AI CONFIG")
+    st.subheader("AI Configuration")
     st.text(f"Model: {config.openai_model}")
 
-    # Temperature slider (educational)
+    # Temperature slider
     temp = st.slider(
-        "CREATIVITY LEVEL",
+        "Creativity Level",
         0.0,
         1.0,
         value=st.session_state["temperature"],
         step=0.05,
-        help="Higher = more creative neural patterns",
+        help="Higher values produce more creative responses",
     )
     st.session_state["temperature"] = temp
 
-    # Learning info
-    st.subheader("📚 CYBER FEATURES")
+    # Features info
+    st.subheader("Features")
     st.markdown("""
-    **Neural Capabilities:**
+    **Capabilities:**
     - Real-time streaming
     - Persistent memory
     - Error resilience
-    - Tropical vibes
-    - Cyberpunk aesthetics
+    - Professional interface
+    - Modern design
     """)
 
     # Debug diagnostics (only when DEBUG_UI=1)
     if DEBUG_UI:
-        st.subheader("🔧 DEBUG MODE")
-        st.text("Neural Diagnostics:")
-        st.text("• Container: 900px max")
-        st.text("• Font: Courier New")
-        st.text("• Theme: Gruvbox")
-        st.text("• Style: Cyberpunk")
+        st.subheader("Debug Mode")
+        st.text("System Diagnostics:")
+        st.text("• Container: Responsive")
+        st.text("• Font: System fonts")
+        st.text("• Theme: Professional")
+        st.text("• Style: Modern")
         st.text("")
-        st.text("If issues persist:")
-        st.text("• Check neural pathways")
-        st.text("• Verify data streams")
-        st.text("• Reboot consciousness")
+        st.text("Troubleshooting:")
+        st.text("• Check configuration")
+        st.text("• Verify connections")
+        st.text("• Restart application")

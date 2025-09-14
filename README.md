@@ -294,6 +294,41 @@ messages = [system_message] + st.session_state.messages
 - **Header clipping**: If the title appears clipped, try a hard refresh and ensure you're on the latest code
 - **Debug mode**: Set `DEBUG_UI=1` environment variable to see UI diagnostics in the sidebar
 
+## 🚨 Troubleshooting
+
+### Common Issues & Solutions
+
+**API Key Not Found**
+- Ensure your API key is set correctly in `.env` file or environment variables
+- Check that the key is valid and has sufficient credits
+- Verify the key is properly formatted (starts with `sk-`)
+
+**Redis Connection Issues**
+- **Redis unreachable**: App automatically falls back to in-memory storage
+- **Warning message**: "Redis is configured but unreachable" appears once
+- **Solution**: Check Redis is running with `docker compose ps`
+- **Fallback**: App remains fully functional without Redis
+
+**Header Clipping Issues**
+- **Title appears cut off**: Try a hard refresh (Ctrl+F5 or Cmd+Shift+R)
+- **Black bar at top**: Ensure you're using the latest code with proper CSS
+- **Debug mode**: Set `DEBUG_UI=1` to see UI diagnostics in sidebar
+
+**Variable Scoping Issues**
+- **NameError**: Variables like `generating` must be defined unconditionally at top level
+- **Solution**: Use `st.session_state.setdefault()` for all state variables
+- **Prevention**: Define all variables used in main logic before any conditional blocks
+
+**Streaming Issues**
+- **Typing indicator lingers**: This is a known limitation; it clears on next interaction
+- **Stop button not working**: Ensure you're using the latest code with proper state management
+- **No streaming**: Check your internet connection and OpenAI API status
+
+**Theme Issues**
+- **Theme not switching**: Use Streamlit's "Settings → Theme" menu (hamburger menu → Settings)
+- **Dark mode looks wrong**: Check Streamlit's theme settings; the app uses built-in theme system
+- **Text not readable**: CSS uses translucent colors that adapt to both light and dark themes
+
 ## 🔄 Redis-backed History (Optional)
 
 ### **Why Redis?**
@@ -386,6 +421,8 @@ cp .env.sample .env
 | `make fmt` | Format with ruff (if installed) |
 | `make clean` | Remove __pycache__ and temp files |
 | `make reset` | Flush Redis DB 0 (DANGEROUS) |
+
+**Note**: `ruff` is optional but recommended for code quality. Install with `pip install ruff` to enable linting and formatting.
 
 ### **Docker Commands** (Alternative)
 ```bash

@@ -33,10 +33,10 @@ logs:
 	@docker compose logs -f
 
 lint:
-	@command -v ruff >/dev/null 2>&1 && ruff check . || echo "ruff not installed; skip"
+	@command -v ruff >/dev/null 2>&1 && ruff check . --config pyproject.toml || echo "ruff not installed; skip"
 
 fmt:
-	@command -v ruff >/dev/null 2>&1 && ruff format . || echo "ruff not installed; skip"
+	@command -v ruff >/dev/null 2>&1 && ruff format . --config pyproject.toml || echo "ruff not installed; skip"
 
 clean:
 	@find . -name "__pycache__" -type d -prune -exec rm -rf {} +

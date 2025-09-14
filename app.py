@@ -445,11 +445,29 @@ html, body {
   padding: 0 !important;
   background: #282828 !important;
   overflow-x: hidden !important;
+  height: 100vh !important;
 }
 
 /* Fix Streamlit's main container */
 #root {
   background: #282828 !important;
+  height: 100vh !important;
+}
+
+/* Fix all Streamlit containers */
+.stApp > div {
+  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
+  min-height: 100vh !important;
+  height: 100vh !important;
+}
+
+/* Fix main content area */
+.main {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100vh !important;
+  overflow-y: auto !important;
 }
 
 /* Fix sidebar positioning */
@@ -458,19 +476,21 @@ html, body {
   border-right: 2px solid #d3869b !important;
   top: 0 !important;
   height: 100vh !important;
+  position: fixed !important;
 }
 
-/* Fix main content area positioning */
-.main {
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Ensure full height coverage */
-.stApp > div {
-  min-height: 100vh !important;
-  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
+/* Fix the main content area when sidebar is present */
+.main .block-container {
+  max-width: 900px !important;
+  padding: 1rem !important;
+  margin: 0 auto !important;
+  background: rgba(40, 40, 40, 0.95) !important;
+  border-radius: 20px !important;
+  border: 2px solid #8ec07c !important;
+  box-shadow: 0 0 30px rgba(139, 233, 253, 0.3), inset 0 0 30px rgba(139, 233, 253, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* Fix chat input positioning */
@@ -478,6 +498,55 @@ html, body {
   background: transparent !important;
   padding: 1rem !important;
   margin: 0 !important;
+  position: relative !important;
+}
+
+/* Remove any bottom padding/margins that might cause white bars */
+.stApp footer,
+.stApp .stApp > div > div:last-child,
+.stApp .main > div:last-child {
+  display: none !important;
+}
+
+/* Fix any remaining white space */
+.stApp .stApp > div {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Ensure no white background shows through */
+.stApp .stApp > div > div {
+  background: transparent !important;
+}
+
+/* Target specific Streamlit elements that might cause white bars */
+.stApp .stApp > div > div > div {
+  background: transparent !important;
+}
+
+/* Fix any remaining white space at the bottom */
+.stApp .stApp > div > div > div:last-child {
+  background: transparent !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Ensure the main content area fills the screen */
+.stApp .main {
+  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
+  min-height: 100vh !important;
+}
+
+/* Fix any Streamlit default containers */
+.stApp .stApp > div > div > div > div {
+  background: transparent !important;
+}
+
+/* Target the specific container that might be causing the white bar */
+.stApp .stApp > div > div > div > div:last-child {
+  background: transparent !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Scrollbar styling */

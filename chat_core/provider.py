@@ -65,7 +65,10 @@ class OpenAIProvider(LLMProvider):
     
     def complete(self, messages: List[Dict[str, str]]) -> str:
         """
-        Generate a completion using OpenAI's Chat Completions API.
+        Generate a completion using OpenAI's Chat Completions API (non-streaming).
+        
+        Returns the complete response text after generation finishes.
+        Use this for traditional request-response patterns.
         
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.
@@ -85,10 +88,10 @@ class OpenAIProvider(LLMProvider):
     
     def stream_complete(self, messages: List[Dict[str, str]]) -> Iterator[str]:
         """
-        Stream completion tokens from OpenAI as they arrive.
+        Stream completion tokens from OpenAI as they arrive (real-time).
         
-        Yields non-empty text chunks as they arrive. Handles malformed events
-        defensively to prevent crashes during streaming.
+        Yields text chunks as they're generated, allowing the UI to update
+        incrementally. The UI aggregates these chunks into the final response.
         
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.

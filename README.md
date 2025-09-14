@@ -51,6 +51,7 @@ sandbox-vanilla/
 
 - Python 3.8 or higher
 - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
+- Docker (for Redis persistence)
 
 ### Installation
 
@@ -65,31 +66,47 @@ sandbox-vanilla/
    pip install -r requirements.txt
    ```
 
-3. **Set up your API key** (choose one method):
-
-   **Option A: Environment Variable (Recommended for local development)**
-   ```bash
-   export OPENAI_API_KEY="your-api-key-here"
-   ```
-
-   **Option B: .env file (Recommended for local development)**
+3. **Set up your API key**
    ```bash
    cp .env.sample .env
    # Edit .env with your API key
    ```
 
-   **Option C: Streamlit Secrets (For deployed apps)**
-   Create `.streamlit/secrets.toml`:
-   ```toml
-   OPENAI_API_KEY = "your-api-key-here"
+4. **Run the application** (choose one method):
+
+   **Option A: With Makefile (Recommended)**
+   ```bash
+   make dev  # Starts Redis + Streamlit
    ```
 
-4. **Run the application**
+   **Option B: Manual**
    ```bash
-   streamlit run app.py
+   docker compose up -d  # Start Redis
+   streamlit run app.py  # Start app
    ```
 
 5. **Open your browser** to `http://localhost:8501`
+
+## 🎨 What's New in the UI
+
+### **Modern Design**
+- **Styled chat bubbles** with clean, modern appearance
+- **Grouped sidebar controls** organized by function
+- **Real-time streaming** with typing indicators
+- **Export functionality** for Markdown and JSON
+
+### **Enhanced Controls**
+- **Stream replies toggle** with visual status
+- **Stop button** during generation
+- **New Chat button** for fresh conversations
+- **Temperature slider** for creativity control
+- **Export buttons** for conversation downloads
+
+### **Improved UX**
+- **Clean header** with descriptive subtitle
+- **Organized sidebar** with logical groupings
+- **Visual feedback** during streaming
+- **Responsive design** with proper spacing
 
 ## 🌍 Environments
 
@@ -338,7 +355,21 @@ cp .env.sample .env
 # Edit .env with your settings
 ```
 
-### **Docker Commands**
+### **Makefile Commands**
+
+| Command | Description |
+|---------|-------------|
+| `make dev` | Start Redis + Streamlit (recommended) |
+| `make app` | Run Streamlit only |
+| `make redis-up` | Start Redis via Docker Compose |
+| `make redis-down` | Stop Redis and remove container |
+| `make logs` | Tail Redis logs |
+| `make lint` | Lint with ruff (if installed) |
+| `make fmt` | Format with ruff (if installed) |
+| `make clean` | Remove __pycache__ and temp files |
+| `make reset` | Flush Redis DB 0 (DANGEROUS) |
+
+### **Docker Commands** (Alternative)
 ```bash
 # Start Redis
 docker compose up -d

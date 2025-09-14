@@ -78,7 +78,8 @@ class RedisStore:
         return False
     
     def _key_msgs(self) -> str:
-        """Get Redis key for this session's messages with prefix."""
+        """Get Redis key for this session's messages with environment prefix."""
+        # Key format: {env}:session:{sid}:messages (e.g., "dev:session:abc123:messages")
         return f"{self.key_prefix}session:{self.sid}:messages"
     
     def add_message(self, role: str, content: str) -> None:

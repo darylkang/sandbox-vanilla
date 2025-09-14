@@ -210,6 +210,82 @@ messages = [system_message] + st.session_state.messages
 - Consider implementing conversation length limits
 - Add conversation export/import functionality
 
+## 🔄 Redis-backed History (Optional)
+
+### **Why Redis?**
+- **Survive Refreshes**: Conversation history persists across browser refreshes
+- **Survive Restarts**: History survives server restarts and deployments
+- **Share Across Instances**: Multiple app instances can share the same conversation
+- **Automatic Cleanup**: TTL and message trimming prevent unlimited growth
+
+### **How Session ID Works**
+- Each browser session gets a unique, stable ID via URL query parameters
+- Session ID survives page refreshes and browser restarts
+- Same session ID = same conversation history
+- URL format: `http://localhost:8501?sid=abc123def456`
+
+### **Local Quick Start with Redis**
+
+1. **Start Redis with Docker Compose**:
+   ```bash
+   docker compose up -d
+   docker compose logs -f  # optional, to see Redis logs
+   ```
+
+2. **Set Redis URL and run the app**:
+   ```bash
+   export REDIS_URL=redis://localhost:6379/0
+   streamlit run app.py
+   ```
+
+3. **Test persistence**:
+   - Start a conversation
+   - Refresh the browser → conversation persists
+   - Restart the app → conversation still there
+   - Check the sidebar for "Session: abc123de… • Store: Redis"
+
+### **Production Setup**
+- Use a managed Redis service (e.g., GCP Memorystore, AWS ElastiCache)
+- Set `REDIS_URL` to the private IP via VPC
+- Configure TTL and message limits to control costs
+- Monitor Redis memory usage and performance
+
+### **Fallback Behavior**
+- If Redis is unavailable, app automatically uses in-memory storage
+- Small warning appears: "Redis is configured but unreachable"
+- App remains fully functional with Streamlit session state
+- No data loss, just no persistence across restarts
+
+### **Configuration Options**
+```bash
+# Environment variables
+export REDIS_URL=redis://localhost:6379/0
+export HISTORY_MAX_TURNS=20          # Max conversation turns
+export HISTORY_TTL_SECONDS=2592000   # 30 days TTL
+
+# Or via .env file (copy from .env.sample)
+cp .env.sample .env
+# Edit .env with your settings
+```
+
+### **Docker Commands**
+```bash
+# Start Redis
+docker compose up -d
+
+# Check Redis status
+docker compose ps
+
+# View Redis logs
+docker compose logs -f redis
+
+# Stop Redis
+docker compose down
+
+# Clean up (removes volumes)
+docker compose down -v
+```
+
 ## 🚀 Future Stages
 
 ### **Stage 2: FastAPI Sidecar**
@@ -218,11 +294,11 @@ messages = [system_message] + st.session_state.messages
 - API documentation with OpenAPI/Swagger
 - Authentication and rate limiting
 
-### **Stage 3: Redis Streaming & Persistence**
-- Redis-based message streaming
-- Persistent conversation storage
-- Real-time collaboration features
+### **Stage 3: Advanced Streaming**
+- Real-time message streaming
+- Typing indicators and presence
 - Message queuing and processing
+- Advanced Redis features
 
 ### **Stage 4: Multiple Provider Support**
 - Anthropic Claude integration

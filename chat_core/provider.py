@@ -5,9 +5,9 @@ Provides a unified interface for different LLM services with OpenAI
 as the initial implementation.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from openai import OpenAI
-from .config import ChatConfig
+from .config import ChatConfig, AppConfig
 
 
 class LLMProvider:
@@ -32,14 +32,20 @@ class LLMProvider:
 class OpenAIProvider(LLMProvider):
     """OpenAI Chat Completions API provider."""
     
-    def __init__(self, config: ChatConfig):
+    def __init__(self, config: Union[ChatConfig, AppConfig]):
         """
         Initialize OpenAI provider with configuration.
         
         Args:
-            config: ChatConfig containing API key and model settings.
+            config: ChatConfig or AppConfig containing API key and model settings.
         """
-        self.client = OpenAI(api_key=config.api_key)
+        # Handle both legacy ChatConfig and new AppConfig
+        if hasattr(config, 'openai_api_key'):
+            api_key = config.openai_api_key
+        else:
+            api_key = config.api_key
+            
+        self.client = OpenAI(api_key=api_key)
         self.config = config
     
     def complete(self, messages: List[Dict[str, str]]) -> str:

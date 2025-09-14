@@ -19,6 +19,8 @@ import streamlit as st
 from chat_core.config import load_config
 from chat_core.provider import OpenAIProvider
 from chat_core.history import StreamlitStore
+from chat_core.store import RedisStore
+from chat_core.session import get_or_create_sid
 from chat_core.errors import humanize_error
 
 # Set the page title and configuration
@@ -29,10 +31,35 @@ st.set_page_config(
 )
 
 st.title("🤖 Educational LLM Chatbot")
-st.markdown("*Stage 1: Modularized architecture with chat_core package*")
+st.markdown("*Stage 1: Modularized architecture with Redis persistence*")
 
-# Initialize chat history store
-chat_store = StreamlitStore()
+# Load configuration and initialize provider
+config = load_config()
+provider = OpenAIProvider(config)
+
+# Get stable session ID for Redis persistence
+sid = get_or_create_sid(st)
+
+# Select storage backend with graceful fallback
+if config.redis_url:
+    try:
+        chat_store = RedisStore(
+            sid=sid, 
+            url=config.redis_url, 
+            max_turns=config.history_max_turns, 
+            ttl_seconds=config.history_ttl_seconds
+        )
+        if not chat_store.is_healthy():
+            raise RuntimeError("Redis ping failed")
+        backend_label = "Redis"
+    except Exception:
+        # Redis misconfigured/unavailable → safe fallback
+        chat_store = StreamlitStore()
+        backend_label = "Streamlit (fallback)"
+        st.warning("Redis is configured but unreachable; using in-memory history for this session.")
+else:
+    chat_store = StreamlitStore()
+    backend_label = "Streamlit"
 
 
 # Display chat messages from history on app rerun
@@ -49,12 +76,8 @@ if prompt := st.chat_input("Ask the bot anything..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Load configuration and initialize provider
+    # Generate response using the provider
     try:
-        config = load_config()
-        provider = OpenAIProvider(config)
-        
-        # Generate response using the provider
         with st.spinner("🤔 Thinking..."):
             reply = provider.complete(chat_store.get_messages())
         
@@ -106,9 +129,12 @@ with st.sidebar:
             chat_store.clear()
             st.rerun()
     
+    # Show session and storage info
+    st.caption(f"Session: {sid[:8]}… • Store: {backend_label}")
+    
     st.markdown("""
     **Future Stages:**
     - Stage 2: FastAPI sidecar for API endpoints
-    - Stage 3: Redis streaming and persistence
+    - Stage 3: WebSocket streaming and real-time features
     - Stage 4: Multiple provider support
     """)

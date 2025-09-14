@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:7
+    container_name: redis-local
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./_data/redis:/data
+    environment:
+      - REDIS_ARGS=--save 60 1000 --appendonly yes
+    command: ["sh", "-c", "redis-server --appendonly yes $${REDIS_ARGS}"]

@@ -90,13 +90,13 @@ sandbox-vanilla/
 ## 🎨 What's New in the UI
 
 ### **Modern Design**
-- **Styled chat bubbles** with clean, modern appearance
-- **Grouped sidebar controls** organized by function
-- **Real-time streaming** with typing indicators
+- **Styled chat bubbles** with Apple-like fonts and subtle borders
+- **Light/Dark/System theme** with automatic OS preference detection
+- **Always-on streaming** with animated typing indicators
 - **Export functionality** for Markdown and JSON
 
 ### **Enhanced Controls**
-- **Stream replies toggle** with visual status
+- **Theme toggle** (System/Light/Dark) in sidebar
 - **Stop button** during generation
 - **New Chat button** for fresh conversations
 - **Temperature slider** for creativity control
@@ -104,8 +104,8 @@ sandbox-vanilla/
 
 ### **Improved UX**
 - **Clean header** with descriptive subtitle
-- **Organized sidebar** with logical groupings
-- **Visual feedback** during streaming
+- **Animated typing indicator** during generation
+- **Theme-aware styling** with proper contrast
 - **Responsive design** with proper spacing
 
 ## 🌍 Environments
@@ -275,6 +275,11 @@ messages = [system_message] + st.session_state.messages
 - **Warning message**: "Redis is configured but unreachable" appears once
 - **Solution**: Check Redis is running with `docker compose ps`
 - **Fallback**: App remains fully functional without Redis
+
+### Theme Issues
+- **Dark mode looks wrong**: Ensure you're on the latest app and refresh; theme is applied via CSS/JS on each run
+- **System theme not working**: Check your OS dark mode settings
+- **Text not readable**: Theme variables ensure proper contrast; try switching themes
 
 ## 🔄 Redis-backed History (Optional)
 

@@ -67,8 +67,7 @@ class OpenAIProvider(LLMProvider):
         """
         Generate a completion using OpenAI's Chat Completions API (non-streaming).
         
-        Returns the complete response text after generation finishes.
-        Use this for traditional request-response patterns.
+        UI streams by default; complete() remains a fallback path used by app on errors only.
         
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.
@@ -90,8 +89,8 @@ class OpenAIProvider(LLMProvider):
         """
         Stream completion tokens from OpenAI as they arrive (real-time).
         
-        Yields text chunks as they're generated, allowing the UI to update
-        incrementally. The UI aggregates these chunks into the final response.
+        UI streams by default; this is the primary method for response generation.
+        Yields text chunks as they're generated, allowing the UI to update incrementally.
         
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.

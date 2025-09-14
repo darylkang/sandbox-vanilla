@@ -1,9 +1,6 @@
 """
 Chat history storage interfaces and implementations.
 
-Provides abstraction for storing and retrieving chat messages with
-Streamlit session state as the initial implementation.
-
 StreamlitStore: In-memory storage using st.session_state that persists
 across app reruns but not browser refreshes. Good for learning and development.
 

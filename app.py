@@ -44,8 +44,8 @@ st.set_page_config(
 )
 
 # Header section
-st.title("🤖 Educational LLM Chatbot")
-st.markdown("*Real-time streaming with persistent history and modern UI*")
+st.title("Personal Chatbot")
+st.markdown("*Streaming by default • Session history in Redis (optional)*")
 
 # Load configuration and initialize provider once
 try:
@@ -84,31 +84,132 @@ else:
 st.session_state.setdefault("generating", False)
 st.session_state.setdefault("stop_requested", False)
 st.session_state.setdefault("temperature", 0.7)
+st.session_state.setdefault("theme", "system")
 
 # Log startup information
 logging.info(f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}")
 
-# Inject modern CSS styling
-st.markdown("""
+# Theme selection (unconditional)
+theme = st.radio("Theme", ["System", "Light", "Dark"], index=["System", "Light", "Dark"].index(st.session_state["theme"].title()))
+st.session_state["theme"] = theme.lower()
+
+# Compute effective theme
+effective_theme = st.session_state["theme"]
+if effective_theme == "system":
+    # Will be determined by JS based on OS preference
+    effective_theme = "system"
+
+# Inject theme-aware CSS styling
+st.markdown(f"""
 <style>
-/* Global tidy up */
-.block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
+/* CSS Variables for theming */
+.theme-light {{
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #3b82f6;
+  --bubble-user-bg: #e8f0ff;
+  --bubble-assist-bg: #f7f7f8;
+}}
+
+.theme-dark {{
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --text: #ffffff;
+  --muted: #9ca3af;
+  --border: #374151;
+  --primary: #60a5fa;
+  --bubble-user-bg: #1e3a8a;
+  --bubble-assist-bg: #374151;
+}}
+
+/* Global styling */
+body {{
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}}
+
+.block-container {{
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  background: var(--bg);
+  color: var(--text);
+}}
+
+h1, h2, h3 {{
+  letter-spacing: 0.2px;
+  margin-top: 0.5rem;
+  color: var(--text);
+}}
 
 /* Chat bubbles */
-.chat-bubble { padding: 0.75rem 1rem; border-radius: 12px; margin: 0.25rem 0 0.75rem 0; }
-.chat-user { background: #e8f0ff; border: 1px solid #cfe0ff; }
-.chat-assistant { background: #f7f7f8; border: 1px solid #e6e6e6; }
+.chat-bubble {{
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  margin: 0.25rem 0 0.8rem 0;
+  border: 1px solid var(--border);
+  color: var(--text);
+}}
 
-/* Titles */
-h1, h2, h3 { letter-spacing: 0.2px; }
+.chat-user {{
+  background: var(--bubble-user-bg);
+}}
 
-/* Sticky-ish footer spacing for chat_input */
-footer { visibility: hidden; }
+.chat-assistant {{
+  background: var(--bubble-assist-bg);
+}}
+
+/* Typing indicator */
+.typing {{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+}}
+
+.dot {{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  display: inline-block;
+  animation: blink 1.2s infinite ease-in-out;
+}}
+
+.dot:nth-child(2) {{
+  animation-delay: 0.2s;
+}}
+
+.dot:nth-child(3) {{
+  animation-delay: 0.4s;
+}}
+
+@keyframes blink {{
+  0%, 80%, 100% {{ opacity: 0.2; }}
+  40% {{ opacity: 1; }}
+}}
+
+/* Footer spacing */
+footer {{ visibility: hidden; }}
 </style>
 """, unsafe_allow_html=True)
 
-# Define UI controls unconditionally at top level
-stream_on = st.checkbox("Stream replies", value=True, help="Show tokens as they arrive", key="stream_checkbox")
+# Apply theme via JavaScript
+st.markdown(f"""
+<script>
+(function() {{
+  const preferDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const mode = "{effective_theme}".toLowerCase();
+  document.body.classList.remove('theme-light', 'theme-dark');
+  if (mode === 'system') {{
+    document.body.classList.add(preferDark ? 'theme-dark' : 'theme-light');
+  }} else {{
+    document.body.classList.add(mode === 'dark' ? 'theme-dark' : 'theme-light');
+  }}
+}})();
+</script>
+""", unsafe_allow_html=True)
 
 # Helper functions
 def render_message(msg: dict):
@@ -146,42 +247,31 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
     st.session_state["stop_requested"] = False
     st.session_state["generating"] = True
 
-    # Generate response using the provider
+    # Generate response using the provider (always streaming)
     try:
-        if stream_on:
-            # Streaming response
-            with st.chat_message("assistant"):
-                placeholder = st.empty()
-                accumulator = []
-                
-                # Show typing indicator
-                st.caption("Assistant is typing...")
-                
-                # Stream tokens
-                for chunk in provider.stream_complete(chat_store.get_messages()):
-                    if st.session_state.get("stop_requested", False):
-                        break
-                    accumulator.append(chunk)
-                    placeholder.markdown(f'<div class="chat-bubble chat-assistant">{"".join(accumulator)}</div>', unsafe_allow_html=True)
-                
-                # Finalize
-                final_text = "".join(accumulator)
-                
-                # Add assistant's response to conversation history (once)
-                chat_store.add_message("assistant", final_text)
-                
-                # Update placeholder with final text
-                placeholder.markdown(f'<div class="chat-bubble chat-assistant">{final_text}</div>', unsafe_allow_html=True)
-        else:
-            # Non-streaming response (existing behavior)
-            with st.spinner("🤔 Thinking..."):
-                reply = provider.complete(chat_store.get_messages())
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            accumulator = []
+            
+            # Show animated typing indicator
+            typing_placeholder = st.empty()
+            typing_placeholder.markdown('<div class="typing">Assistant is typing <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>', unsafe_allow_html=True)
+            
+            # Stream tokens
+            for chunk in provider.stream_complete(chat_store.get_messages()):
+                if st.session_state.get("stop_requested", False):
+                    break
+                accumulator.append(chunk)
+                placeholder.markdown(f'<div class="chat-bubble chat-assistant">{"".join(accumulator)}</div>', unsafe_allow_html=True)
+            
+            # Finalize
+            final_text = "".join(accumulator)
             
             # Add assistant's response to conversation history (once)
-            chat_store.add_message("assistant", reply)
+            chat_store.add_message("assistant", final_text)
             
-            # Display the assistant's response
-            render_message({"role": "assistant", "content": reply})
+            # Update placeholder with final text
+            placeholder.markdown(f'<div class="chat-bubble chat-assistant">{final_text}</div>', unsafe_allow_html=True)
             
     except Exception as e:
         # Handle errors with humanized messages (single path)
@@ -190,11 +280,23 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
         render_message({"role": "assistant", "content": error_msg})
     
     finally:
-        # Reset generation state
+        # Reset generation state and clear typing indicator
         st.session_state["generating"] = False
+        # Clear typing indicator (it will be cleared by the empty() call above)
 
 # Sidebar controls
 with st.sidebar:
+    # Theme selection
+    st.subheader("🎨 Theme")
+    # Theme radio is already defined above, just show status
+    st.text(f"Mode: {theme}")
+    
+    # Stop button (only visible during generation)
+    if st.session_state.get("generating", False):
+        if st.button("🛑 Stop", help="Stop the current response generation"):
+            st.session_state["stop_requested"] = True
+            st.rerun()
+    
     # Session info
     st.subheader("📋 Session")
     st.caption(f"Env: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
@@ -207,16 +309,6 @@ with st.sidebar:
     temp = st.slider("Creativity (temperature)", 0.0, 1.0, value=st.session_state["temperature"], step=0.05,
                      help="Higher = more creative. Kept for learning; provider may ignore for now.")
     st.session_state["temperature"] = temp
-    
-    # Streaming controls
-    st.markdown("**Streaming:**")
-    st.text("Stream replies: " + ("✅ ON" if stream_on else "❌ OFF"))
-    
-    # Stop button (only visible during generation)
-    if st.session_state.get("generating", False):
-        if st.button("🛑 Stop", help="Stop the current response generation"):
-            st.session_state["stop_requested"] = True
-            st.rerun()
     
     # History
     st.subheader("💬 History")
@@ -254,8 +346,8 @@ with st.sidebar:
     st.subheader("📚 Learning")
     st.markdown("""
     **Key Concepts:**
-    - Modular architecture
-    - Real-time streaming
+    - Always-on streaming
+    - Theme system
     - Persistent history
     - Error handling
     - Modern UI design

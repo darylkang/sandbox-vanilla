@@ -204,3 +204,31 @@ $53
 dev:session:5dbfb38873f94f22b6c79b8bc19605d1:messages
 $13
 1757818490685
+*3
+$5
+RPUSH
+$53
+dev:session:811484c47a47429b89ba7fac96a93b5b:messages
+$60
+{"role": "user", "content": "Hello there", "ts": 1757815621}
+*3
+$9
+PEXPIREAT
+$53
+dev:session:811484c47a47429b89ba7fac96a93b5b:messages
+$13
+1757819221936
+*3
+$5
+RPUSH
+$53
+dev:session:811484c47a47429b89ba7fac96a93b5b:messages
+$88
+{"role": "assistant", "content": "Hello! How can I assist you today?", "ts": 1757815623}
+*3
+$9
+PEXPIREAT
+$53
+dev:session:811484c47a47429b89ba7fac96a93b5b:messages
+$13
+1757819223097

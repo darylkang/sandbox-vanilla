@@ -23,7 +23,7 @@ def get_or_create_sid(st) -> str:
         st: Streamlit module (for accessing query_params and session_state)
 
     Returns:
-        str: Stable session ID (16-character hex string)
+        str: Stable session ID (32-character hex string)
     """
     # Read existing sid from query parameters
     qp = dict(st.query_params)

@@ -39,14 +39,16 @@ class ChatStore(ABC):
 class StreamlitStore(ChatStore):
     """Streamlit session state implementation of ChatStore."""
 
-    def __init__(self, session_key: str = "messages"):
+    def __init__(self, session_key: str = "messages", max_turns: int = 20):
         """
         Initialize Streamlit store.
 
         Args:
             session_key: Key to use in st.session_state for storing messages.
+            max_turns: Maximum conversation turns to keep (user+assistant pairs)
         """
         self.session_key = session_key
+        self.max_turns = max_turns
         self._ensure_initialized()
 
     def _ensure_initialized(self) -> None:
@@ -67,6 +69,10 @@ class StreamlitStore(ChatStore):
         import streamlit as st
 
         st.session_state[self.session_key].append({"role": role, "content": content})
+        # Trim to last max_turns*2 messages (user+assistant pairs)
+        maxlen = self.max_turns * 2
+        if maxlen > 0:
+            st.session_state[self.session_key] = st.session_state[self.session_key][-maxlen:]
 
     def clear(self) -> None:
         """Clear all messages from Streamlit session state."""

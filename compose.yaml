@@ -9,3 +9,9 @@ services:
     environment:
       - REDIS_ARGS=--save 60 1000 --appendonly yes
     command: ["sh", "-c", "redis-server --appendonly yes $${REDIS_ARGS}"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

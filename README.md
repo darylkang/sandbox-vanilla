@@ -341,7 +341,8 @@ messages = [system_message] + st.session_state.messages
 - Each browser session gets a unique, stable ID via URL query parameters
 - Session ID survives page refreshes and browser restarts
 - Same session ID = same conversation history
-- URL format: `http://localhost:8501?sid=abc123def456`
+- Session IDs are 32-character hex strings
+- URL format: `http://localhost:8501?sid=abc123def456...`
 - **Note**: This approach uses URL query parameters for educational purposes. In production, you'd typically use HttpOnly cookies managed by a backend service.
 
 ### **Local Quick Start with Redis**
@@ -379,16 +380,14 @@ messages = [system_message] + st.session_state.messages
 ## 🌊 Token Streaming
 
 ### **Real-time Response Generation**
-- **Stream replies**: Toggle in sidebar to show tokens as they arrive
+- **Always-on streaming**: Tokens render as they arrive
 - **Stop button**: Appears during generation to interrupt streaming
 - **Incremental updates**: Text appears token-by-token for better UX
-- **Partial responses**: Stopped responses are saved to history
+- **Partial responses**: Stopped responses are saved to history when non-empty
 
-### **Streaming Controls**
-- **Checkbox**: "Stream replies" (default: True) in sidebar
+### **Streaming Behavior**
 - **Stop button**: Only visible during generation
-- **Status indicator**: Shows "🌊 Streaming..." during generation
-- **Fallback**: If streaming fails, reverts to non-streaming mode
+- **Fallback**: If streaming fails, the app attempts a non-streaming response
 
 ### **Learning Concepts**
 - Real-time UI updates with Streamlit placeholders
@@ -396,12 +395,26 @@ messages = [system_message] + st.session_state.messages
 - Error handling in streaming contexts
 - User interaction during generation
 
+### **Temperature Control**
+- **Environment Variable**: `OPENAI_TEMPERATURE` (0.0–2.0, default: 0.7)
+- **Behavior**: Controls randomness in AI responses; affects both streaming and non-streaming calls
+- **Clamping**: Values are automatically clamped to OpenAI's valid range [0.0, 2.0]
+- **Logging**: Selected temperature is logged at startup in dev mode
+- **Configuration**: Set via environment variable, .env file, or Streamlit secrets
+
+### **Redis Healthcheck**
+- **Healthcheck**: Redis container includes health monitoring with 5s intervals
+- **Startup**: Makefile `dev` target waits for Redis to be healthy before starting Streamlit
+- **Timeout**: Up to 30 seconds wait time with 1-second intervals
+- **Fallback**: App gracefully falls back to in-memory storage if Redis is unavailable
+
 ### **Configuration Options**
 ```bash
 # Environment variables
 export REDIS_URL=redis://localhost:6379/0
 export HISTORY_MAX_TURNS=20          # Max conversation turns
 export HISTORY_TTL_SECONDS=2592000   # 30 days TTL
+export OPENAI_TEMPERATURE=0.7        # AI response randomness (0.0-2.0)
 
 # Or via .env file (copy from .env.sample)
 cp .env.sample .env
@@ -412,10 +425,11 @@ cp .env.sample .env
 
 | Command | Description |
 |---------|-------------|
-| `make dev` | Start Redis + Streamlit (recommended) |
+| `make dev` | Start Redis + wait for health + Streamlit (recommended) |
 | `make app` | Run Streamlit only |
 | `make redis-up` | Start Redis via Docker Compose |
 | `make redis-down` | Stop Redis and remove container |
+| `make wait-redis` | Wait for Redis to be healthy (up to 30s) |
 | `make logs` | Tail Redis logs |
 | `make lint` | Lint with ruff (if installed) |
 | `make fmt` | Format with ruff (if installed) |

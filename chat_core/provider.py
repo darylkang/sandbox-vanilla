@@ -15,7 +15,7 @@ from .config import AppConfig, ChatConfig
 class LLMProvider:
     """Abstract base class for LLM providers."""
 
-    def complete(self, messages: List[Dict[str, str]]) -> str:
+    def complete(self, messages: List[Dict[str, str]], **overrides) -> str:
         """
         Generate a completion for the given messages.
 
@@ -30,7 +30,7 @@ class LLMProvider:
         """
         raise NotImplementedError
 
-    def stream_complete(self, messages: List[Dict[str, str]]) -> Iterator[str]:
+    def stream_complete(self, messages: List[Dict[str, str]], **overrides) -> Iterator[str]:
         """
         Stream completion tokens as they arrive.
 
@@ -65,11 +65,12 @@ class OpenAIProvider(LLMProvider):
         self.client = OpenAI(api_key=api_key)
         self.config = config
 
-    def complete(self, messages: List[Dict[str, str]]) -> str:
+    def complete(self, messages: List[Dict[str, str]], **overrides) -> str:
         """
         Generate a completion using OpenAI's Chat Completions API (non-streaming).
 
         UI streams by default; complete() remains a fallback path used by app on errors only.
+        Temperature controlled via env; clamped to [0,2].
 
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.
@@ -80,18 +81,18 @@ class OpenAIProvider(LLMProvider):
         Raises:
             Exception: If the API call fails.
         """
-        response = self.client.chat.completions.create(
-            messages=messages, **self.config.to_dict()
-        )
+        params = {**self.config.to_dict(), **overrides}
+        response = self.client.chat.completions.create(messages=messages, **params)
 
         return response.choices[0].message.content
 
-    def stream_complete(self, messages: List[Dict[str, str]]) -> Iterator[str]:
+    def stream_complete(self, messages: List[Dict[str, str]], **overrides) -> Iterator[str]:
         """
         Stream completion tokens from OpenAI as they arrive (real-time).
 
         UI streams by default; this is the primary method for response generation.
         Yields text chunks as they're generated, allowing the UI to update incrementally.
+        Temperature controlled via env; clamped to [0,2].
 
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys.
@@ -102,8 +103,9 @@ class OpenAIProvider(LLMProvider):
         Raises:
             Exception: If the streaming API call fails.
         """
+        params = {**self.config.to_dict(), **overrides}
         stream = self.client.chat.completions.create(
-            messages=messages, stream=True, **self.config.to_dict()
+            messages=messages, stream=True, **params
         )
 
         for event in stream:

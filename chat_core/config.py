@@ -27,11 +27,15 @@ class AppConfig:
     history_max_turns: int = 20
     history_ttl_seconds: int = 3600  # 1 hour (dev default)
     key_prefix: str = ""
+    openai_temperature: float = 0.7
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary for API calls."""
+        # Only include known OpenAI parameters here. Runtime overrides may be
+        # passed by callers and should take precedence over these defaults.
         return {
             "model": self.openai_model,
+            "temperature": self.openai_temperature,
         }
 
 
@@ -85,6 +89,7 @@ def load_config() -> AppConfig:
     max_turns = 20
     ttl_seconds = env_defaults["history_ttl_seconds"]
     key_prefix = f"{env}:"
+    temperature = 0.7
 
     try:
         if hasattr(st, "secrets") and st.secrets:
@@ -94,6 +99,7 @@ def load_config() -> AppConfig:
             max_turns = int(st.secrets.get("HISTORY_MAX_TURNS", str(max_turns)))
             ttl_seconds = int(st.secrets.get("HISTORY_TTL_SECONDS", str(ttl_seconds)))
             key_prefix = st.secrets.get("REDIS_KEY_PREFIX", key_prefix)
+            temperature = float(st.secrets.get("OPENAI_TEMPERATURE", str(temperature)))
     except Exception:
         # Secrets system not available or failed
         pass
@@ -105,6 +111,10 @@ def load_config() -> AppConfig:
     max_turns = int(os.getenv("HISTORY_MAX_TURNS", str(max_turns)))
     ttl_seconds = int(os.getenv("HISTORY_TTL_SECONDS", str(ttl_seconds)))
     key_prefix = os.getenv("REDIS_KEY_PREFIX", key_prefix)
+    temperature = float(os.getenv("OPENAI_TEMPERATURE", str(temperature)))
+
+    # Clamp temperature to valid OpenAI range [0.0, 2.0]
+    temperature = max(0.0, min(2.0, temperature))
 
     if not api_key:
         raise RuntimeError(
@@ -120,4 +130,5 @@ def load_config() -> AppConfig:
         history_max_turns=max_turns,
         history_ttl_seconds=ttl_seconds,
         key_prefix=key_prefix,
+        openai_temperature=temperature,
     )

@@ -18,10 +18,12 @@ Key Learning Concepts:
 - Modern UI design and state management
 """
 
+import html
 import json
 import logging
 import os
 import uuid
+from typing import Dict, List
 
 import streamlit as st
 
@@ -79,13 +81,13 @@ if config.redis_url:
         backend_label = "Redis"
     except Exception:
         # Redis misconfigured/unavailable → safe fallback
-        chat_store = StreamlitStore()
+        chat_store = StreamlitStore(max_turns=config.history_max_turns)
         backend_label = "Streamlit (fallback)"
         st.warning(
             "Redis is configured but unreachable; using in-memory history for this session."
         )
 else:
-    chat_store = StreamlitStore()
+    chat_store = StreamlitStore(max_turns=config.history_max_turns)
     backend_label = "Streamlit"
 
 # Initialize session state defaults
@@ -95,7 +97,7 @@ st.session_state.setdefault("temperature", 0.7)
 
 # Log startup information
 logging.info(
-    f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}"
+    f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model} | Temperature: {config.openai_temperature}"
 )
 
 # Inject minimal theme-aware CSS
@@ -158,16 +160,17 @@ h1, h2, h3 {
 
 
 # Helper functions
-def render_message(msg: dict):
+def render_message(msg: Dict[str, str]):
     """Render a chat message with modern styling."""
     role = msg.get("role", "user")
-    content = msg.get("content", "")
+    # Escape content to prevent HTML injection
+    content = html.escape(msg.get("content", ""))
     css = "chat-bubble chat-user" if role == "user" else "chat-bubble chat-assistant"
     with st.chat_message(role):
         st.markdown(f'<div class="{css}">{content}</div>', unsafe_allow_html=True)
 
 
-def transcript_to_markdown(messages: list[dict]) -> str:
+def transcript_to_markdown(messages: List[Dict[str, str]]) -> str:
     """Convert conversation to Markdown format."""
     lines = ["# Chat Transcript", ""]
     for m in messages:
@@ -209,12 +212,16 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
             )
 
             # Stream tokens
-            for chunk in provider.stream_complete(chat_store.get_messages()):
+            for chunk in provider.stream_complete(
+                chat_store.get_messages(), temperature=st.session_state["temperature"]
+            ):
                 if st.session_state.get("stop_requested", False):
                     break
                 accumulator.append(chunk)
+                # Escape incremental content before rendering
+                safe_partial = html.escape("".join(accumulator))
                 placeholder.markdown(
-                    f'<div class="chat-bubble chat-assistant">{"".join(accumulator)}</div>',
+                    f'<div class="chat-bubble chat-assistant">{safe_partial}</div>',
                     unsafe_allow_html=True,
                 )
 
@@ -222,19 +229,29 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
             final_text = "".join(accumulator)
 
             # Add assistant's response to conversation history (once)
-            chat_store.add_message("assistant", final_text)
+            if final_text.strip():
+                chat_store.add_message("assistant", final_text)
 
             # Update placeholder with final text
+            safe_final = html.escape(final_text)
             placeholder.markdown(
-                f'<div class="chat-bubble chat-assistant">{final_text}</div>',
+                f'<div class="chat-bubble chat-assistant">{safe_final}</div>',
                 unsafe_allow_html=True,
             )
 
-    except Exception as e:
-        # Handle errors with humanized messages (single path)
-        error_msg = humanize_error(e)
-        chat_store.add_message("assistant", error_msg)
-        render_message({"role": "assistant", "content": error_msg})
+    except Exception:
+        # Attempt non-streaming fallback before humanizing the error
+        try:
+            fallback_text = provider.complete(
+                chat_store.get_messages(), temperature=st.session_state["temperature"]
+            )
+            chat_store.add_message("assistant", fallback_text)
+            render_message({"role": "assistant", "content": fallback_text})
+        except Exception as inner:
+            # Handle errors with humanized messages (single path)
+            error_msg = humanize_error(inner)
+            chat_store.add_message("assistant", error_msg)
+            render_message({"role": "assistant", "content": error_msg})
 
     finally:
         # Reset generation state and clear typing indicator

@@ -4,6 +4,9 @@ Session management for stable browser session identification.
 Creates and maintains a stable session ID (sid) that survives browser refreshes
 by storing it in URL query parameters. This enables Redis-backed persistence
 to maintain conversation history across page reloads and server restarts.
+
+Note: This approach uses URL query parameters for educational purposes.
+In production, you'd typically use HttpOnly cookies managed by a backend service.
 """
 
 import uuid

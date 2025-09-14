@@ -15,6 +15,7 @@ Key Learning Concepts:
 - Streamlit integration with custom packages
 """
 
+import logging
 import streamlit as st
 from chat_core.config import load_config
 from chat_core.provider import OpenAIProvider
@@ -22,6 +23,12 @@ from chat_core.history import StreamlitStore
 from chat_core.store import RedisStore
 from chat_core.session import get_or_create_sid
 from chat_core.errors import humanize_error
+
+# Initialize logging once
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Set the page title and configuration
 st.set_page_config(
@@ -33,9 +40,13 @@ st.set_page_config(
 st.title("🤖 Educational LLM Chatbot")
 st.markdown("*Stage 1: Modularized architecture with Redis persistence*")
 
-# Load configuration and initialize provider
-config = load_config()
-provider = OpenAIProvider(config)
+# Load configuration and initialize provider once
+try:
+    config = load_config()
+    provider = OpenAIProvider(config)
+except Exception as e:
+    st.error(f"Configuration error: {str(e)}")
+    st.stop()
 
 # Get stable session ID for Redis persistence
 sid = get_or_create_sid(st)
@@ -47,7 +58,8 @@ if config.redis_url:
             sid=sid, 
             url=config.redis_url, 
             max_turns=config.history_max_turns, 
-            ttl_seconds=config.history_ttl_seconds
+            ttl_seconds=config.history_ttl_seconds,
+            key_prefix=config.key_prefix
         )
         if not chat_store.is_healthy():
             raise RuntimeError("Redis ping failed")
@@ -60,6 +72,9 @@ if config.redis_url:
 else:
     chat_store = StreamlitStore()
     backend_label = "Streamlit"
+
+# Log startup information
+logging.info(f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}")
 
 
 # Display chat messages from history on app rerun
@@ -130,7 +145,7 @@ with st.sidebar:
             st.rerun()
     
     # Show session and storage info
-    st.caption(f"Session: {sid[:8]}… • Store: {backend_label}")
+    st.caption(f"Env: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
     
     st.markdown("""
     **Future Stages:**

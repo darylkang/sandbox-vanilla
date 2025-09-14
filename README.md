@@ -71,7 +71,13 @@ sandbox-vanilla/
    export OPENAI_API_KEY="your-api-key-here"
    ```
 
-   **Option B: Streamlit Secrets (For deployed apps)**
+   **Option B: .env file (Recommended for local development)**
+   ```bash
+   cp .env.sample .env
+   # Edit .env with your API key
+   ```
+
+   **Option C: Streamlit Secrets (For deployed apps)**
    Create `.streamlit/secrets.toml`:
    ```toml
    OPENAI_API_KEY = "your-api-key-here"
@@ -83,6 +89,37 @@ sandbox-vanilla/
    ```
 
 5. **Open your browser** to `http://localhost:8501`
+
+## 🌍 Environments
+
+The app supports three environment modes via `APP_ENV`:
+
+- **dev** (default): Short TTL (1 hour), verbose logging
+- **staging**: Long TTL (30 days), warning-level logging  
+- **prod**: Long TTL (30 days), warning-level logging
+
+### Config Precedence
+Configuration is loaded in this order (later overrides earlier):
+1. Environment variables
+2. `.env` file
+3. Streamlit secrets
+4. Defaults
+
+**Recommendation**: Commit `.env.sample` but ignore `.env` in git.
+
+### Redis Key Prefixing
+Redis keys are prefixed to prevent cross-talk between environments:
+- `dev:session:abc123:messages`
+- `staging:session:def456:messages`
+- `prod:session:ghi789:messages`
+
+Set `REDIS_KEY_PREFIX` to override the default `{APP_ENV}:` prefix.
+
+### Logging
+- **Dev**: INFO level with startup details
+- **Staging/Prod**: WARNING level
+- View logs in terminal where you run `streamlit run app.py`
+- Single startup line shows: env, store backend, key prefix, model
 
 ## 📚 Module Documentation
 

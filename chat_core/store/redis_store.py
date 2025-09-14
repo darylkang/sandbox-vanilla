@@ -1,8 +1,9 @@
 """
-Redis-backed chat history storage with TTL and message trimming.
+Redis-backed chat history storage with TTL, message trimming, and key prefixing.
 
 Provides persistent storage for chat messages that survives browser refreshes
-and server restarts. Uses Redis lists with automatic trimming and expiration.
+and server restarts. Uses Redis lists with automatic trimming, expiration,
+and environment-based key prefixing to prevent cross-talk.
 """
 
 import json
@@ -13,28 +14,36 @@ from redis import Redis
 
 
 @lru_cache(maxsize=8)
-def _get_client(url: str) -> Redis:
+def _get_client(url: str, socket_connect_timeout: float = 0.5, socket_timeout: float = 0.5) -> Redis:
     """
-    Memoized Redis client factory to avoid reconnecting on every rerun.
+    Memoized Redis client factory with short timeouts to avoid hanging.
     
     Args:
         url: Redis connection URL
+        socket_connect_timeout: Connection timeout in seconds
+        socket_timeout: Socket timeout in seconds
         
     Returns:
         Redis client instance
     """
-    return Redis.from_url(url, decode_responses=True)
+    return Redis.from_url(
+        url, 
+        decode_responses=True,
+        socket_connect_timeout=socket_connect_timeout,
+        socket_timeout=socket_timeout
+    )
 
 
 class RedisStore:
     """
-    Redis-backed chat history storage with TTL and message trimming.
+    Redis-backed chat history storage with TTL, message trimming, and key prefixing.
     
     Stores messages as JSON in Redis lists with automatic trimming to keep
-    only the last N conversation turns and TTL for automatic expiration.
+    only the last N conversation turns, TTL for automatic expiration, and
+    environment-based key prefixing to prevent cross-talk between environments.
     """
     
-    def __init__(self, sid: str, url: str, max_turns: int = 20, ttl_seconds: int = 30*24*3600):
+    def __init__(self, sid: str, url: str, max_turns: int = 20, ttl_seconds: int = 30*24*3600, key_prefix: str = ""):
         """
         Initialize Redis store for a specific session.
         
@@ -42,24 +51,35 @@ class RedisStore:
             sid: Session ID for this conversation
             url: Redis connection URL
             max_turns: Maximum conversation turns to keep (user+assistant pairs)
-            ttl_seconds: Time-to-live for the session data (default: 30 days)
+            ttl_seconds: Time-to-live for the session data
+            key_prefix: Prefix for Redis keys (e.g., "dev:", "prod:")
         """
         self.sid = sid
         self.url = url
         self.max_turns = max_turns
         self.ttl_seconds = ttl_seconds
+        self.key_prefix = key_prefix
         
-        # Create Redis client and test connection
+        # Create Redis client with short timeouts
         self._redis = _get_client(url)
-        try:
-            self._redis.ping()
-            self._healthy = True
-        except Exception:
-            self._healthy = False
+        
+        # Test connection with retry logic
+        self._healthy = self._test_connection()
+    
+    def _test_connection(self) -> bool:
+        """Test Redis connection with exponential backoff retry."""
+        for attempt in range(3):
+            try:
+                self._redis.ping()
+                return True
+            except Exception:
+                if attempt < 2:  # Don't sleep on last attempt
+                    time.sleep(0.2 * (2 ** attempt))  # 0.2s, 0.4s, 0.8s
+        return False
     
     def _key_msgs(self) -> str:
-        """Get Redis key for this session's messages."""
-        return f"session:{self.sid}:messages"
+        """Get Redis key for this session's messages with prefix."""
+        return f"{self.key_prefix}session:{self.sid}:messages"
     
     def add_message(self, role: str, content: str) -> None:
         """

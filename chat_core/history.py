@@ -6,6 +6,7 @@ Streamlit session state as the initial implementation.
 
 Note: RedisStore lives in chat_core/store and shares the same interface
 for persistent storage that survives browser refreshes and server restarts.
+StreamlitStore uses session state which persists across reruns but not refreshes.
 """
 
 from typing import List, Dict, Any, Optional

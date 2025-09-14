@@ -108,6 +108,12 @@ sandbox-vanilla/
 - **Theme-aware styling** with proper contrast
 - **Responsive design** with proper spacing
 
+### **Theme System**
+- **System mode**: Follows OS dark/light preference via CSS media queries
+- **Light/Dark modes**: Force specific themes regardless of OS setting
+- **Theme toggle**: Located in sidebar for easy access
+- **Note**: Some Streamlit components may not fully respect color-scheme due to internal styling
+
 ## 🌍 Environments
 
 The app supports three environment modes via `APP_ENV`:
@@ -277,9 +283,10 @@ messages = [system_message] + st.session_state.messages
 - **Fallback**: App remains fully functional without Redis
 
 ### Theme Issues
-- **Dark mode looks wrong**: Ensure you're on the latest app and refresh; theme is applied via CSS/JS on each run
-- **System theme not working**: Check your OS dark mode settings
+- **Dark mode looks wrong**: Ensure you're on the latest app and refresh; theme is applied via CSS variables
+- **System theme not working**: Check your OS dark mode settings; System mode uses CSS media queries
 - **Text not readable**: Theme variables ensure proper contrast; try switching themes
+- **Theme not switching**: Some Streamlit components may not fully respect color-scheme; this is a known limitation
 
 ## 🔄 Redis-backed History (Optional)
 

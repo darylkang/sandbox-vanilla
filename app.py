@@ -20,7 +20,6 @@ Key Learning Concepts:
 
 import logging
 import uuid
-import io
 import json
 import streamlit as st
 from chat_core.config import load_config
@@ -89,127 +88,148 @@ st.session_state.setdefault("theme", "system")
 # Log startup information
 logging.info(f"Env: {config.env} | Store: {backend_label} | Key prefix: {config.key_prefix} | Model: {config.openai_model}")
 
-# Theme selection (unconditional)
-theme = st.radio("Theme", ["System", "Light", "Dark"], index=["System", "Light", "Dark"].index(st.session_state["theme"].title()))
-st.session_state["theme"] = theme.lower()
-
-# Compute effective theme
-effective_theme = st.session_state["theme"]
-if effective_theme == "system":
-    # Will be determined by JS based on OS preference
-    effective_theme = "system"
-
-# Inject theme-aware CSS styling
-st.markdown(f"""
+# Inject base CSS with media queries for System mode
+st.markdown("""
 <style>
-/* CSS Variables for theming */
-.theme-light {{
+/* Base font and shared styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Light theme variables (default) */
+:root {
   --bg: #ffffff;
-  --surface: #f8f9fa;
-  --text: #1a1a1a;
-  --muted: #6b7280;
+  --surface: #f7f7f8;
+  --text: #0b0b0c;
+  --muted: #6b6f76;
   --border: #e5e7eb;
-  --primary: #3b82f6;
+  --primary: #0a84ff;
   --bubble-user-bg: #e8f0ff;
   --bubble-assist-bg: #f7f7f8;
-}}
+}
 
-.theme-dark {{
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --text: #ffffff;
-  --muted: #9ca3af;
-  --border: #374151;
-  --primary: #60a5fa;
-  --bubble-user-bg: #1e3a8a;
-  --bubble-assist-bg: #374151;
-}}
+/* Dark theme variables (via media query for System mode) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0c;
+    --surface: #141416;
+    --text: #f5f6f7;
+    --muted: #a0a4ab;
+    --border: #2a2d32;
+    --primary: #0a84ff;
+    --bubble-user-bg: #1b2230;
+    --bubble-assist-bg: #1a1b1e;
+  }
+}
 
-/* Global styling */
-body {{
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}}
+/* Apply backgrounds with high specificity */
+.stApp, .block-container {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
 
-.block-container {{
+.block-container {
   padding-top: 1.25rem;
   padding-bottom: 2rem;
-  background: var(--bg);
-  color: var(--text);
-}}
+}
 
-h1, h2, h3 {{
-  letter-spacing: 0.2px;
+h1, h2, h3 {
+  color: var(--text) !important;
   margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Ensure text elements use theme colors */
+p, li, div, span {
   color: var(--text);
-}}
+}
 
 /* Chat bubbles */
-.chat-bubble {{
+.chat-bubble {
   padding: 0.75rem 1rem;
   border-radius: 14px;
   margin: 0.25rem 0 0.8rem 0;
   border: 1px solid var(--border);
   color: var(--text);
-}}
+}
 
-.chat-user {{
+.chat-user {
   background: var(--bubble-user-bg);
-}}
+}
 
-.chat-assistant {{
+.chat-assistant {
   background: var(--bubble-assist-bg);
-}}
+}
 
 /* Typing indicator */
-.typing {{
+.typing {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   color: var(--muted);
-}}
+}
 
-.dot {{
+.dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--muted);
   display: inline-block;
   animation: blink 1.2s infinite ease-in-out;
-}}
+}
 
-.dot:nth-child(2) {{
+.dot:nth-child(2) {
   animation-delay: 0.2s;
-}}
+}
 
-.dot:nth-child(3) {{
+.dot:nth-child(3) {
   animation-delay: 0.4s;
-}}
+}
 
-@keyframes blink {{
-  0%, 80%, 100% {{ opacity: 0.2; }}
-  40% {{ opacity: 1; }}
-}}
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
 
 /* Footer spacing */
-footer {{ visibility: hidden; }}
+footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# Apply theme via JavaScript
-st.markdown(f"""
-<script>
-(function() {{
-  const preferDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const mode = "{effective_theme}".toLowerCase();
-  document.body.classList.remove('theme-light', 'theme-dark');
-  if (mode === 'system') {{
-    document.body.classList.add(preferDark ? 'theme-dark' : 'theme-light');
-  }} else {{
-    document.body.classList.add(mode === 'dark' ? 'theme-dark' : 'theme-light');
-  }}
-}})();
-</script>
-""", unsafe_allow_html=True)
+# Theme-specific CSS injection based on user selection
+theme_choice = st.session_state["theme"]
+if theme_choice == "light":
+    st.markdown("""
+    <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --surface: #f7f7f8;
+      --text: #0b0b0c;
+      --muted: #6b6f76;
+      --border: #e5e7eb;
+      --primary: #0a84ff;
+      --bubble-user-bg: #e8f0ff;
+      --bubble-assist-bg: #f7f7f8;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+elif theme_choice == "dark":
+    st.markdown("""
+    <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0c;
+      --surface: #141416;
+      --text: #f5f6f7;
+      --muted: #a0a4ab;
+      --border: #2a2d32;
+      --primary: #0a84ff;
+      --bubble-user-bg: #1b2230;
+      --bubble-assist-bg: #1a1b1e;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Helper functions
 def render_message(msg: dict):
@@ -248,6 +268,7 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
     st.session_state["generating"] = True
 
     # Generate response using the provider (always streaming)
+    typing_placeholder = None
     try:
         with st.chat_message("assistant"):
             placeholder = st.empty()
@@ -282,33 +303,21 @@ if prompt := st.chat_input("Ask anything... Press Enter to send"):
     finally:
         # Reset generation state and clear typing indicator
         st.session_state["generating"] = False
-        # Clear typing indicator (it will be cleared by the empty() call above)
+        if typing_placeholder:
+            typing_placeholder.empty()
 
 # Sidebar controls
 with st.sidebar:
-    # Theme selection
-    st.subheader("🎨 Theme")
-    # Theme radio is already defined above, just show status
-    st.text(f"Mode: {theme}")
-    
-    # Stop button (only visible during generation)
-    if st.session_state.get("generating", False):
-        if st.button("🛑 Stop", help="Stop the current response generation"):
-            st.session_state["stop_requested"] = True
-            st.rerun()
-    
     # Session info
     st.subheader("📋 Session")
     st.caption(f"Env: {config.env} • Session: {sid[:8]}… • Store: {backend_label}")
     
-    # Model & behavior
-    st.subheader("🤖 Model & Behavior")
-    st.text(f"Model: {config.openai_model}")
-    
-    # Temperature slider (educational)
-    temp = st.slider("Creativity (temperature)", 0.0, 1.0, value=st.session_state["temperature"], step=0.05,
-                     help="Higher = more creative. Kept for learning; provider may ignore for now.")
-    st.session_state["temperature"] = temp
+    # Theme selection
+    st.subheader("🎨 Theme")
+    theme_choice = st.radio("Theme", ["System", "Light", "Dark"], 
+                           index=["System", "Light", "Dark"].index(st.session_state["theme"].title()),
+                           key="theme_radio")
+    st.session_state["theme"] = theme_choice.lower()
     
     # History
     st.subheader("💬 History")
@@ -341,6 +350,24 @@ with st.sidebar:
         st.download_button("📋 JSON", data=json_bytes, file_name="chat.json", mime="application/json")
     else:
         st.text("No conversation to export")
+    
+    # Controls
+    st.subheader("🎮 Controls")
+    
+    # Stop button (only visible during generation)
+    if st.session_state.get("generating", False):
+        if st.button("🛑 Stop", help="Stop the current response generation"):
+            st.session_state["stop_requested"] = True
+            st.rerun()
+    
+    # Model & behavior
+    st.subheader("🤖 Model & Behavior")
+    st.text(f"Model: {config.openai_model}")
+    
+    # Temperature slider (educational)
+    temp = st.slider("Creativity (temperature)", 0.0, 1.0, value=st.session_state["temperature"], step=0.05,
+                     help="Higher = more creative. Kept for learning; provider may ignore for now.")
+    st.session_state["temperature"] = temp
     
     # Learning info
     st.subheader("📚 Learning")

@@ -131,180 +131,269 @@ st.markdown(
   --bright-gray: #a89984;
 }
 
-/* Cyberpunk tropical background */
+/* Force override Streamlit defaults */
 .stApp {
-  background: linear-gradient(135deg, var(--bg0) 0%, #1a1a1a 50%, var(--bg1) 100%);
-  background-attachment: fixed;
+  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
+  background-attachment: fixed !important;
+  font-family: 'Courier New', monospace !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-/* Main container with neon glow */
-.block-container {
-  max-width: 900px;
-  padding: 2rem 1rem;
-  background: rgba(40, 40, 40, 0.95);
-  border-radius: 20px;
-  border: 2px solid var(--bright-aqua);
-  box-shadow:
-    0 0 30px rgba(139, 233, 253, 0.3),
-    inset 0 0 30px rgba(139, 233, 253, 0.1);
-  backdrop-filter: blur(10px);
+/* Remove white bars and fix container */
+.main .block-container {
+  max-width: 900px !important;
+  padding: 1rem !important;
+  margin: 0 auto !important;
+  background: rgba(40, 40, 40, 0.95) !important;
+  border-radius: 20px !important;
+  border: 2px solid #8ec07c !important;
+  box-shadow: 0 0 30px rgba(139, 233, 253, 0.3), inset 0 0 30px rgba(139, 233, 253, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Fix main content area */
+.main {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove default Streamlit padding */
+.stApp > div {
+  padding: 0 !important;
+}
+
+/* Fix header area */
+.stApp header {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Fix footer area */
+.stApp footer {
+  display: none !important;
 }
 
 /* Cyberpunk title styling */
 h1 {
-  color: var(--bright-aqua);
-  text-shadow: 0 0 10px var(--bright-aqua);
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 0.5rem;
+  color: #8ec07c !important;
+  text-shadow: 0 0 10px #8ec07c !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  margin-bottom: 0.5rem !important;
 }
 
 /* Tropical caption */
 .stCaption {
-  color: var(--bright-green);
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
-  text-shadow: 0 0 5px var(--bright-green);
+  color: #b8bb26 !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  text-shadow: 0 0 5px #b8bb26 !important;
 }
 
-/* Chat message styling */
+/* Chat message styling - force override */
 .stChatMessage {
-  background: rgba(60, 56, 54, 0.8);
-  border-radius: 15px;
-  border: 1px solid var(--bright-purple);
-  margin: 1rem 0;
-  padding: 1rem;
-  box-shadow: 0 0 15px rgba(177, 98, 134, 0.2);
+  background: rgba(60, 56, 54, 0.8) !important;
+  border-radius: 15px !important;
+  border: 1px solid #d3869b !important;
+  margin: 1rem 0 !important;
+  padding: 1rem !important;
+  box-shadow: 0 0 15px rgba(177, 98, 134, 0.2) !important;
 }
 
 /* User messages - tropical blue */
 .stChatMessage[data-testid="user"] {
-  background: linear-gradient(135deg, rgba(69, 133, 136, 0.3), rgba(131, 165, 152, 0.2));
-  border-color: var(--bright-blue);
-  box-shadow: 0 0 15px rgba(131, 165, 152, 0.3);
+  background: linear-gradient(135deg, rgba(69, 133, 136, 0.3), rgba(131, 165, 152, 0.2)) !important;
+  border-color: #83a598 !important;
+  box-shadow: 0 0 15px rgba(131, 165, 152, 0.3) !important;
 }
 
 /* Assistant messages - cyberpunk purple */
 .stChatMessage[data-testid="assistant"] {
-  background: linear-gradient(135deg, rgba(177, 98, 134, 0.3), rgba(211, 134, 155, 0.2));
-  border-color: var(--bright-purple);
-  box-shadow: 0 0 15px rgba(211, 134, 155, 0.3);
+  background: linear-gradient(135deg, rgba(177, 98, 134, 0.3), rgba(211, 134, 155, 0.2)) !important;
+  border-color: #d3869b !important;
+  box-shadow: 0 0 15px rgba(211, 134, 155, 0.3) !important;
 }
 
-/* Text styling */
+/* Text styling - force override */
 .stMarkdown {
-  color: var(--fg);
-  font-family: 'Courier New', monospace;
-  line-height: 1.6;
+  color: #ebdbb2 !important;
+  font-family: 'Courier New', monospace !important;
+  line-height: 1.6 !important;
+}
+
+.stMarkdown p {
+  color: #ebdbb2 !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Fix all text elements to be light colored */
+.stApp * {
+  color: #ebdbb2 !important;
+}
+
+/* Override specific dark text elements */
+.stApp .stText {
+  color: #ebdbb2 !important;
+}
+
+.stApp .stTextInput > div > div > input {
+  color: #ebdbb2 !important;
+}
+
+.stApp .stSelectbox > div > div > div {
+  color: #ebdbb2 !important;
+}
+
+.stApp .stSlider > div > div > div > div {
+  color: #ebdbb2 !important;
+}
+
+/* Fix button text */
+.stButton > button {
+  color: #282828 !important;
+}
+
+/* Fix metric text */
+.stMetric > div > div {
+  color: #ebdbb2 !important;
+}
+
+.stMetric > div > div > div {
+  color: #ebdbb2 !important;
 }
 
 /* Code blocks - gruvbox style */
 .stMarkdown pre {
-  background: var(--bg1);
-  border: 1px solid var(--bright-orange);
-  border-radius: 10px;
-  padding: 1rem;
-  color: var(--bright-yellow);
-  font-family: 'Courier New', monospace;
-  box-shadow: 0 0 10px rgba(215, 153, 33, 0.3);
+  background: #3c3836 !important;
+  border: 1px solid #fe8019 !important;
+  border-radius: 10px !important;
+  padding: 1rem !important;
+  color: #fabd2f !important;
+  font-family: 'Courier New', monospace !important;
+  box-shadow: 0 0 10px rgba(215, 153, 33, 0.3) !important;
 }
 
 .stMarkdown code {
-  background: var(--bg2);
-  color: var(--bright-green);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  border: 1px solid var(--green);
+  background: #504945 !important;
+  color: #b8bb26 !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 4px !important;
+  font-family: 'Courier New', monospace !important;
+  border: 1px solid #98971a !important;
 }
 
 /* Links - tropical aqua */
 .stMarkdown a {
-  color: var(--bright-aqua);
-  text-decoration: none;
-  text-shadow: 0 0 5px var(--bright-aqua);
+  color: #8ec07c !important;
+  text-decoration: none !important;
+  text-shadow: 0 0 5px #8ec07c !important;
 }
 
 .stMarkdown a:hover {
-  color: var(--bright-blue);
-  text-shadow: 0 0 10px var(--bright-blue);
+  color: #83a598 !important;
+  text-shadow: 0 0 10px #83a598 !important;
 }
 
-/* Input styling */
+/* Input styling - force override */
 .stChatInput > div > div > div {
-  background: var(--bg1);
-  border: 2px solid var(--bright-green);
-  border-radius: 15px;
-  color: var(--fg);
-  font-family: 'Courier New', monospace;
-  box-shadow: 0 0 15px rgba(184, 187, 38, 0.3);
+  background: #3c3836 !important;
+  border: 2px solid #b8bb26 !important;
+  border-radius: 15px !important;
+  color: #ebdbb2 !important;
+  font-family: 'Courier New', monospace !important;
+  box-shadow: 0 0 15px rgba(184, 187, 38, 0.3) !important;
 }
 
 .stChatInput > div > div > div:focus {
-  border-color: var(--bright-aqua);
-  box-shadow: 0 0 20px rgba(139, 233, 253, 0.5);
+  border-color: #8ec07c !important;
+  box-shadow: 0 0 20px rgba(139, 233, 253, 0.5) !important;
 }
 
-/* Sidebar styling */
+/* Sidebar styling - force override */
 .stSidebar {
-  background: linear-gradient(180deg, var(--bg0), var(--bg1));
-  border-right: 2px solid var(--bright-purple);
+  background: linear-gradient(180deg, #282828, #3c3836) !important;
+  border-right: 2px solid #d3869b !important;
 }
 
 .stSidebar .stMarkdown {
-  color: var(--fg);
+  color: #ebdbb2 !important;
+}
+
+.stSidebar .stMarkdown p {
+  color: #ebdbb2 !important;
+}
+
+/* Sidebar headers */
+.stSidebar h3 {
+  color: #8ec07c !important;
+  font-family: 'Courier New', monospace !important;
+  text-shadow: 0 0 5px #8ec07c !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
 }
 
 /* Buttons - cyberpunk style */
 .stButton > button {
-  background: linear-gradient(45deg, var(--bright-purple), var(--bright-blue));
-  color: var(--bg0);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 0 15px rgba(211, 134, 155, 0.4);
-  transition: all 0.3s ease;
+  background: linear-gradient(45deg, #d3869b, #83a598) !important;
+  color: #282828 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 0 15px rgba(211, 134, 155, 0.4) !important;
+  transition: all 0.3s ease !important;
 }
 
 .stButton > button:hover {
-  background: linear-gradient(45deg, var(--bright-blue), var(--bright-aqua));
-  box-shadow: 0 0 25px rgba(139, 233, 253, 0.6);
-  transform: translateY(-2px);
+  background: linear-gradient(45deg, #83a598, #8ec07c) !important;
+  box-shadow: 0 0 25px rgba(139, 233, 253, 0.6) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Slider styling */
 .stSlider > div > div > div > div {
-  background: var(--bright-aqua);
-  box-shadow: 0 0 10px var(--bright-aqua);
+  background: #8ec07c !important;
+  box-shadow: 0 0 10px #8ec07c !important;
+}
+
+/* Metric styling */
+.stMetric {
+  color: #ebdbb2 !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.stMetric > div > div {
+  color: #ebdbb2 !important;
+  font-family: 'Courier New', monospace !important;
 }
 
 /* Typing indicator - cyberpunk style */
 .typing {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  color: var(--bright-aqua);
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 0 5px var(--bright-aqua);
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+  color: #8ec07c !important;
+  font-family: 'Courier New', monospace !important;
+  text-shadow: 0 0 5px #8ec07c !important;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--bright-aqua);
-  display: inline-block;
-  animation: cyberpunk-blink 1.5s infinite ease-in-out;
-  box-shadow: 0 0 10px var(--bright-aqua);
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #8ec07c !important;
+  display: inline-block !important;
+  animation: cyberpunk-blink 1.5s infinite ease-in-out !important;
+  box-shadow: 0 0 10px #8ec07c !important;
 }
 
-.dot:nth-child(2) { animation-delay: .3s; }
-.dot:nth-child(3) { animation-delay: .6s; }
+.dot:nth-child(2) { animation-delay: .3s !important; }
+.dot:nth-child(3) { animation-delay: .6s !important; }
 
 @keyframes cyberpunk-blink {
   0%, 80%, 100% {
@@ -350,24 +439,65 @@ h1 {
   50% { opacity: 0.8; }
 }
 
+/* Fix body and html to remove white bars */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #282828 !important;
+  overflow-x: hidden !important;
+}
+
+/* Fix Streamlit's main container */
+#root {
+  background: #282828 !important;
+}
+
+/* Fix sidebar positioning */
+.stSidebar {
+  background: linear-gradient(180deg, #282828, #3c3836) !important;
+  border-right: 2px solid #d3869b !important;
+  top: 0 !important;
+  height: 100vh !important;
+}
+
+/* Fix main content area positioning */
+.main {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure full height coverage */
+.stApp > div {
+  min-height: 100vh !important;
+  background: linear-gradient(135deg, #282828 0%, #1a1a1a 50%, #3c3836 100%) !important;
+}
+
+/* Fix chat input positioning */
+.stChatInput {
+  background: transparent !important;
+  padding: 1rem !important;
+  margin: 0 !important;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg1);
+  background: #3c3836;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bright-purple);
+  background: #d3869b;
   border-radius: 4px;
-  box-shadow: 0 0 5px var(--bright-purple);
+  box-shadow: 0 0 5px #d3869b;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--bright-aqua);
-  box-shadow: 0 0 10px var(--bright-aqua);
+  background: #8ec07c;
+  box-shadow: 0 0 10px #8ec07c;
 }
 </style>
 """,
